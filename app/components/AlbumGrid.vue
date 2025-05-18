@@ -23,21 +23,38 @@
           <p :style="{ color: 'var(--ui-text)' }">No images found in this album.</p>
         </div>
 
-        <!-- Grid of images -->
+        <!-- Grid of images and videos -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div 
             v-for="image in images" 
             :key="image.id" 
-            class="image-container aspect-square rounded-md overflow-hidden cursor-pointer"
+            class="image-container aspect-square rounded-md overflow-hidden cursor-pointer relative"
             @click="openImage(image.id)"
           >
-            <img 
-              :src="image.webp_path || image.path || image.thumbnail_url" 
-              :alt="image.caption || image.title || 'Album image'" 
-              class="w-full h-full object-cover" 
-            />
-            <div class="middle-overlay">
-              <div class="middle-overlay-text">{{ image.caption || image.title || '' }}</div>
+            <!-- Video thumbnail with play button -->
+            <template v-if="isVideo(image)">
+              <img 
+                :src="image.thumbnail_url || ''" 
+                :alt="image.caption || 'Video thumbnail'" 
+                class="w-full h-full object-cover" 
+              />
+              <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
+                <UIcon name="i-heroicons-play" class="text-4xl text-white" />
+              </div>
+            </template>
+            
+            <!-- Regular image -->
+            <template v-else>
+              <img 
+                :src="image.thumbnail_url || image.webp_url || image.path || ''" 
+                :alt="image.caption || 'Album image'" 
+                class="w-full h-full object-cover" 
+              />
+            </template>
+
+            <!-- Caption overlay -->
+            <div v-if="image.caption" class="middle-overlay">
+              <div class="middle-overlay-text">{{ image.caption }}</div>
             </div>
           </div>
         </div>
@@ -50,32 +67,41 @@
 import { ref, onMounted } from 'vue'
 
 interface Album {
-  id: number;
+  id: string;
   title: string;
   description: string;
   cover_image_path: string;
-  user_id: number;
+  user_id: string;
   created_at: string;
   updated_at: string;
 }
 
-interface Image {
-  id: number;
-  title: string;
-  description: string;
-  path: string;
-  webp_path?: string;
-  thumbnail_url?: string;
+interface ImageProperties {
   webp_url?: string;
-  caption?: string;
+  type?: string;
+  video_id?: string;
+  video_type?: string;
+  year?: number;
+  thumbnail_url?: string;
+}
+
+interface Image {
+  id: string;
+  title: string | null;
+  description: string | null;
+  path: string;
+  webp_path: string | null;
+  thumbnail_url: string | null;
+  webp_url: string | null;
+  caption: string | null;
   order: number;
-  properties: any;
+  properties: string | ImageProperties;
   created_at: string;
   updated_at: string;
 }
 
 interface Props {
-  albumId?: number;
+  albumId?: string;
   albumTitle?: string;
 }
 
@@ -87,7 +113,19 @@ const images = ref<Image[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
-const openImage = (imageId: number) => {
+const isVideo = (image: Image) => {
+  if (typeof image.properties === 'string') {
+    try {
+      const props = JSON.parse(image.properties);
+      return props.type === 'video';
+    } catch {
+      return false;
+    }
+  }
+  return image.properties?.type === 'video';
+};
+
+const openImage = (imageId: string) => {
   router.push(`/albums/${imageId}`);
 };
 
@@ -106,49 +144,20 @@ const fetchAlbum = async () => {
       throw new Error('Either albumId or albumTitle must be provided');
     }
     
-    // Mock API response for development
-    if (process.env.NODE_ENV === 'development' && !url.includes('http')) {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Mock data based on the album requested
-      const mockImages = Array.from({ length: 12 }, (_, i) => ({
-        id: i + 1,
-        title: `Image ${i + 1}`,
-        description: `Description for image ${i + 1}`,
-        path: `https://picsum.photos/500/500?random=${i + 1}`,
-        thumbnail_url: `https://picsum.photos/200/200?random=${i + 1}`,
-        caption: `Caption ${i + 1}`,
-        order: i,
-        properties: {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }));
-      
-      const mockAlbum = {
-        id: props.albumId || 1,
-        title: props.albumTitle || (props.albumId === 1 ? 'Fiction' : 'Fashion'),
-        description: `This is the ${props.albumTitle || (props.albumId === 1 ? 'Fiction' : 'Fashion')} album showcasing various images.`,
-        cover_image_path: 'https://picsum.photos/800/400',
-        user_id: 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      album.value = mockAlbum;
-      images.value = mockImages;
-    } else {
-      // Real API call for production
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch album: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      album.value = data.album;
-      images.value = data.images;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch album: ${response.statusText}`);
     }
+    
+    const data = await response.json();
+    album.value = data.album;
+    
+    // Parse properties for each image if it's a string
+    images.value = data.images.map((img: Image) => ({
+      ...img,
+      properties: typeof img.properties === 'string' ? JSON.parse(img.properties) : img.properties
+    }));
   } catch (err) {
     console.error('Error fetching album data:', err);
     error.value = err instanceof Error ? err.message : 'An error occurred while fetching the album';
