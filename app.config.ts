@@ -1,9 +1,9 @@
 export default defineAppConfig({
   ui: {
     colors: {
-      primary: 'neutral', // Using neutral (like zinc or slate) as primary, and then overriding its dark shades to be black
-      // We can add a secondary color here if needed, e.g., secondary: 'amber'
-      // Or define a custom name like 'gold' if we add it to nuxt.config.ts ui.theme.colors
+      primary: 'black',
+      secondary: 'gold',
+      gold: 'amber' // Using amber as base for our gold palette
     },
     button: {
       defaultVariants: {

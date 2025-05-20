@@ -14,9 +14,9 @@ export default defineNuxtConfig({
   ],
   css: ['~/assets/css/main.css'],
   ui: {
-    // Removed 'colors' from here as primary/secondary are defined in app.config.ts
-    // Or by default Nuxt UI primary is 'green' and neutral is 'slate'.
-    // We will override these in app.config.ts or use CSS variables.
+    theme: {
+      colors: ['primary', 'secondary', 'gold'] // Add gold as a custom color
+    }
   }
   // srcDir: 'app/', // This should be picked up by compatibilityVersion: 4
 })

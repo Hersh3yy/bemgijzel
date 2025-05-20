@@ -3,123 +3,97 @@
 
 @theme static {
   /* Define our custom colors */
-  --color-site-black: #010101; /* A very dark black */
+  --color-site-black: #010101;
   --color-site-gold-50: #fef9ed;
   --color-site-gold-100: #fcf2d9;
   --color-site-gold-200: #fae4b3;
   --color-site-gold-300: #f7d78c;
   --color-site-gold-400: #f5c966;
-  --color-site-gold-500: #c49326; /* Your target gold */
+  --color-site-gold-500: #c49326;
   --color-site-gold-600: #b08322;
   --color-site-gold-700: #8c671b;
   --color-site-gold-800: #684d14;
   --color-site-gold-900: #44330d;
   --color-site-gold-950: #221a07;
-
-  /* Make them available as Tailwind utilities e.g. text-site-gold-500, bg-site-black */
-  --color-black: var(--color-site-black); /* Override Tailwind's black if needed, or use site-black */
 }
 
 :root {
-  /* Override Nuxt UI's primary color to use our site-black */
-  /* Nuxt UI uses a neutral color (like slate or zinc) by default for primary if not set in app.config, 
-     or the one set in app.config.ts. We set primary to 'neutral' in app.config.ts.
-     Let's make --ui-primary to be our --color-site-black for the light theme.
-     And for dark theme, primary might be a lighter color or white.
-  */
+  /* Override Nuxt UI's color system */
   --ui-primary: var(--color-site-black);
-  --ui-color-primary-50: var(--color-neutral-950); /* Example: make primary shades dark */
-  --ui-color-primary-100: var(--color-neutral-900);
-  --ui-color-primary-200: var(--color-neutral-800);
-  --ui-color-primary-300: var(--color-neutral-700);
-  --ui-color-primary-400: var(--color-neutral-600);
-  --ui-color-primary-500: var(--color-site-black); /* Core primary color for components */
-  --ui-color-primary-600: var(--color-neutral-400);
-  --ui-color-primary-700: var(--color-neutral-300);
-  --ui-color-primary-800: var(--color-neutral-200);
-  --ui-color-primary-900: var(--color-neutral-100);
-  --ui-color-primary-950: var(--color-neutral-50);
+  --ui-secondary: var(--color-site-gold-500);
+  
+  /* Define the gold color palette */
+  --ui-color-gold-50: var(--color-site-gold-50);
+  --ui-color-gold-100: var(--color-site-gold-100);
+  --ui-color-gold-200: var(--color-site-gold-200);
+  --ui-color-gold-300: var(--color-site-gold-300);
+  --ui-color-gold-400: var(--color-site-gold-400);
+  --ui-color-gold-500: var(--color-site-gold-500);
+  --ui-color-gold-600: var(--color-site-gold-600);
+  --ui-color-gold-700: var(--color-site-gold-700);
+  --ui-color-gold-800: var(--color-site-gold-800);
+  --ui-color-gold-900: var(--color-site-gold-900);
+  --ui-color-gold-950: var(--color-site-gold-950);
 
-
-  /* Define CSS variables for our gold accent, can be used with var(--site-gold) */
-  --site-gold: var(--color-site-gold-500);
-  --site-gold-invert: var(--color-site-black); /* or white depending on context */
-
-  /* Default background and text for the site */
-  --ui-bg: var(--color-site-black);
-  --ui-text: var(--color-site-gold-100); /* Light gold text on black background */
-  --ui-border: var(--color-site-gold-700); /* Gold borders */
-
-  --ui-text-inverted: var(--color-site-black); /* Text on gold backgrounds */
-
-  /* Set navbar specific colors based on old CSS */
-  --navbar-bg-color: var(--color-site-black);
-  --navbar-item-color: var(--color-site-gold-500);
-  --navbar-item-hover-bg-color: var(--color-site-gold-500);
-  --navbar-item-hover-color: var(--color-site-black);
-}
-
-.dark {
-  /* Dark mode adjustments - example: In dark mode, primary might be lighter if desired */
-  /* For now, let's assume dark mode keeps black as primary, gold as accent */
-  --ui-primary: var(--color-site-black);
-  --ui-color-primary-500: var(--color-site-black);
-
+  /* Background and text colors */
   --ui-bg: var(--color-site-black);
   --ui-text: var(--color-site-gold-100);
   --ui-border: var(--color-site-gold-700);
 
-  --navbar-bg-color: var(--color-site-black);
-  --navbar-item-color: var(--color-site-gold-500);
-  --navbar-item-hover-bg-color: var(--color-site-gold-500);
-  --navbar-item-hover-color: var(--color-site-black);
+  /* Text variants */
+  --ui-text-dimmed: var(--color-site-gold-300);
+  --ui-text-muted: var(--color-site-gold-400);
+  --ui-text-toned: var(--color-site-gold-500);
+  --ui-text-highlighted: var(--color-site-gold-100);
+  --ui-text-inverted: var(--color-site-black);
+
+  /* Background variants */
+  --ui-bg-muted: var(--color-site-black);
+  --ui-bg-elevated: var(--color-site-gold-900);
+  --ui-bg-accented: var(--color-site-gold-800);
+  --ui-bg-inverted: var(--color-site-gold-500);
+}
+
+.dark {
+  /* Dark mode adjustments - keeping the same theme for now */
+  --ui-primary: var(--color-site-black);
+  --ui-secondary: var(--color-site-gold-500);
+  
+  --ui-bg: var(--color-site-black);
+  --ui-text: var(--color-site-gold-100);
+  --ui-border: var(--color-site-gold-700);
 }
 
 body {
-  /* Uses the --ui-bg and --ui-text variables defined above */
-  @apply bg-background text-foreground; /* These are NuxtUI default classes using the CSS vars */
-  font-family: sans-serif; /* Add a default font */
+  @apply antialiased text-default bg-default;
+  font-family: sans-serif;
 }
 
-/* Style for links to match the gold color */
+/* Style for links */
 a {
-  color: var(--site-gold);
+  color: var(--color-site-gold-500);
 }
 a:hover {
   color: var(--color-site-gold-300);
 }
 
-/* Middle text overlay for images (from old CSS) - can be refined later */
+/* Image overlay styles */
 .image-container {
-  position: relative;
+  @apply relative;
 }
 
 .middle-overlay {
-  transition: .5s ease;
-  opacity: 0;
-  position: absolute;
-  background-color: rgba(17, 17, 17, 0.7); /* #111111 with some transparency */
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  transform: translate(-50%, -50%);
-  -ms-transform: translate(-50%, -50%);
-  text-align: center;
-  vertical-align: middle;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+  @apply absolute inset-0 bg-black/70 opacity-0 transition-opacity duration-300 flex items-center justify-center;
 }
 
 .middle-overlay-text {
-  color: white;
-  font-weight: bold;
+  @apply text-white font-bold;
 }
 
 .image-container:hover .middle-overlay {
-  opacity: 1;
+  @apply opacity-100;
 }
+
 .image-container:hover img {
-  opacity: 0.8;
+  @apply opacity-80;
 } 

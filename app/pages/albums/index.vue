@@ -13,9 +13,9 @@
         <!-- Albums grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="album in albums" :key="album.id" class="album-card">
-            <NuxtLink :to="album.route" class="image-container block rounded-lg overflow-hidden">
+            <NuxtLink :to="`/albums/${album.title}`" class="image-container block rounded-lg overflow-hidden">
               <img 
-                :src="album.coverImage" 
+                :src="album.cover_image_path" 
                 :alt="album.title" 
                 class="w-full aspect-[4/3] object-cover transition-all duration-300"
               />
@@ -35,54 +35,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
-// For a real application, this data would be fetched from an API
-const albums = ref([
-  {
-    id: 1,
-    title: 'Fiction',
-    description: 'Acting in fiction productions',
-    coverImage: 'https://picsum.photos/400/300?random=1',
-    route: '/fiction'
-  },
-  {
-    id: 2,
-    title: 'Fashion',
-    description: 'Fashion modeling portfolio',
-    coverImage: 'https://picsum.photos/400/300?random=2',
-    route: '/fashion'
-  },
-  // Add more albums as needed
-  {
-    id: 3,
-    title: 'Corporate',
-    description: 'Corporate modeling work',
-    coverImage: 'https://picsum.photos/400/300?random=3',
-    route: '/corporate'
-  },
-  {
-    id: 4,
-    title: 'Commercial',
-    description: 'Acting in commercials',
-    coverImage: 'https://picsum.photos/400/300?random=4',
-    route: '/commercial'
-  },
-  {
-    id: 5,
-    title: 'Music Videos',
-    description: 'Performances in music videos',
-    coverImage: 'https://picsum.photos/400/300?random=5',
-    route: '/music-videos'
-  },
-  {
-    id: 6,
-    title: 'Art',
-    description: 'Artistic photography',
-    coverImage: 'https://picsum.photos/400/300?random=6',
-    route: '/art'
+interface Album {
+  id: string;
+  title: string;
+  description: string;
+  cover_image_path: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+const albums = ref<Album[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
+
+const fetchAlbums = async () => {
+  try {
+    const response = await fetch('https://vams-main-qvek1c.laravel.cloud/api/albums');
+    if (!response.ok) {
+      throw new Error('Failed to fetch albums');
+    }
+    const data = await response.json();
+    albums.value = data.albums;
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'An error occurred while fetching albums';
+  } finally {
+    loading.value = false;
   }
-]);
+};
+
+onMounted(() => {
+  fetchAlbums();
+});
 
 useHead({
   title: 'Albums',
@@ -103,5 +89,32 @@ useHead({
 
 .album-card:hover {
   transform: translateY(-5px);
+}
+
+.middle-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-container {
+  position: relative;
+}
+
+.image-container:hover .middle-overlay {
+  opacity: 1;
+}
+
+.middle-overlay-text {
+  color: white;
+  font-weight: bold;
 }
 </style> 
