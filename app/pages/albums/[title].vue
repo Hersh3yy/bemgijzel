@@ -29,7 +29,7 @@
           <!-- Images grid -->
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="image in images" :key="image.id" class="image-card">
-              <div class="image-container block rounded-lg overflow-hidden">
+              <div class="image-container block rounded-lg overflow-hidden cursor-pointer" @click="openFullscreen(image)">
                 <img 
                   :src="image.thumbnail_url || image.path" 
                   :alt="image.caption || 'Album image'" 
@@ -38,12 +38,6 @@
                 <div class="middle-overlay">
                   <div class="middle-overlay-text">
                     <p v-if="image.caption" class="text-sm">{{ image.caption }}</p>
-                    <UButton 
-                      icon="i-heroicons-arrows-pointing-out" 
-                      color="primary" 
-                      variant="ghost"
-                      @click="openFullscreen(image)"
-                    />
                   </div>
                 </div>
               </div>
@@ -110,14 +104,18 @@ const fetchAlbum = async () => {
   error.value = null;
   
   try {
-    const response = await fetch(`https://vams-main-qvek1c.laravel.cloud/api/albums/title/${route.params.title}`);
+    const response = await fetch(`${useRuntimeConfig().public.apiUrl}/albums/title/${route.params.title}`, {
+      headers: {
+        'Authorization': `Bearer ${useRuntimeConfig().public.apiKey}`
+      }
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch album');
     }
     
     const data = await response.json();
     album.value = data.album;
-    images.value = data.images;
+    images.value = data.images.filter((img: Image | null): img is Image => img !== null);
   } catch (err) {
     console.error('Error fetching album data:', err);
     error.value = err instanceof Error ? err.message : 'An error occurred while fetching the album';

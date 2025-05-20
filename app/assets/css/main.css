@@ -69,6 +69,13 @@ body {
   font-family: sans-serif;
 }
 
+/* Site container */
+.site-container {
+  @apply mx-auto;
+  max-width: 1600px;
+  width: 100%;
+}
+
 /* Style for links */
 a {
   color: var(--color-site-gold-500);
