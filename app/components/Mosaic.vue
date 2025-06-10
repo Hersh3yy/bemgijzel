@@ -2,7 +2,12 @@
   <div class="mosaic-grid">
     <!-- First Column (20%) -->
     <div class="mosaic-column first-column">
-      <div v-for="(image, index) in firstColumnImages" :key="index" class="mosaic-item">
+      <div 
+        v-for="(image, index) in firstColumnImages" 
+        :key="index" 
+        class="mosaic-item"
+        @click="navigateToPage(image)"
+      >
         <img 
           :src="image.url" 
           :alt="image.alt"
@@ -17,7 +22,12 @@
 
     <!-- Second Column (40%) -->
     <div class="mosaic-column second-column">
-      <div v-for="(image, index) in secondColumnImages" :key="index" class="mosaic-item">
+      <div 
+        v-for="(image, index) in secondColumnImages" 
+        :key="index" 
+        class="mosaic-item"
+        @click="navigateToPage(image)"
+      >
         <img 
           :src="image.url" 
           :alt="image.alt"
@@ -32,7 +42,12 @@
 
     <!-- Third Column (40%) -->
     <div class="mosaic-column third-column">
-      <div v-for="(image, index) in thirdColumnImages" :key="index" class="mosaic-item">
+      <div 
+        v-for="(image, index) in thirdColumnImages" 
+        :key="index" 
+        class="mosaic-item"
+        @click="navigateToPage(image)"
+      >
         <img 
           :src="image.url" 
           :alt="image.alt"
@@ -48,16 +63,21 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
+
 export interface MosaicImage {
   url: string;
   alt: string;
   title: string;
   description: string;
+  route?: string;
 }
 
 const props = defineProps<{
   images: MosaicImage[];
 }>();
+
+const router = useRouter();
 
 // Split images into columns based on their titles
 const firstColumnImages = computed(() => {
@@ -77,6 +97,26 @@ const thirdColumnImages = computed(() => {
     ['Acting Corporate', 'Fashion', 'Modeling Corporate'].includes(img.title)
   );
 });
+
+const navigateToPage = (image: MosaicImage) => {
+  if (image.route) {
+    router.push(image.route);
+  } else {
+    // Map titles to routes
+    const routeMap: Record<string, string> = {
+      'Acting Fiction': '/fiction-actings',
+      'Art': '/arts',
+      'Acting Corporate': '/commercial-actings',
+      'Fashion': '/fashion-modelings',
+      'Modeling Corporate': '/corporate-modelings'
+    };
+    
+    const route = routeMap[image.title];
+    if (route) {
+      router.push(route);
+    }
+  }
+};
 </script>
 
 <style scoped>

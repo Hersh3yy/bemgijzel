@@ -134,30 +134,59 @@ const fetchAlbum = async () => {
   error.value = null;
   
   try {
+    const runtimeConfig = useRuntimeConfig();
+    let baseUrl = runtimeConfig.public.vamsUrl || 'localhost:8000';
+    
+    // Ensure baseUrl doesn't have protocol prefix
+    baseUrl = baseUrl.replace(/^https?:\/\//, '');
+    
+    if (!baseUrl) {
+      throw new Error('VAMS_URL environment variable is not configured');
+    }
+    
     let url = '';
     
     if (props.albumId) {
-      url = `/api/albums/${props.albumId}`;
+      url = `http://${baseUrl}/api/albums/${props.albumId}`;
     } else if (props.albumTitle) {
-      url = `/api/albums/title/${props.albumTitle}`;
+      url = `http://${baseUrl}/api/public/albums/by-title/${props.albumTitle}`;
     } else {
       throw new Error('Either albumId or albumTitle must be provided');
     }
     
-    const response = await fetch(url);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
     
-    if (!response.ok) {
-      throw new Error(`Failed to fetch album: ${response.statusText}`);
+    // Add API key header if available
+    if (runtimeConfig.public.vamsBgApiKey) {
+      headers['x-api-key'] = runtimeConfig.public.vamsBgApiKey as string;
     }
     
-    const data = await response.json();
-    album.value = data.album;
+    console.log('Fetching from:', url);
+    console.log('Headers:', headers);
     
-    // Parse properties for each image if it's a string
-    images.value = data.images.map((img: Image) => ({
-      ...img,
-      properties: typeof img.properties === 'string' ? JSON.parse(img.properties) : img.properties
-    }));
+    const response = await fetch(url, { headers });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch album: ${response.status} ${response.statusText}`);
+    }
+    
+    const apiResponse = await response.json();
+    console.log('API Response:', apiResponse);
+    
+    // Handle the nested response structure
+    if (apiResponse.data && apiResponse.data.data) {
+      album.value = apiResponse.data.data.album;
+      
+      // Parse properties for each image if it's a string
+      images.value = apiResponse.data.data.images.map((img: Image) => ({
+        ...img,
+        properties: typeof img.properties === 'string' ? JSON.parse(img.properties) : img.properties
+      }));
+    } else {
+      throw new Error('Invalid response structure');
+    }
   } catch (err) {
     console.error('Error fetching album data:', err);
     error.value = err instanceof Error ? err.message : 'An error occurred while fetching the album';

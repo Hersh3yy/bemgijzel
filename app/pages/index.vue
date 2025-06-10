@@ -34,33 +34,38 @@ const mosaicImages: MosaicImage[] = [
   },
   {
     url: 'https://picsum.photos/800/800?random=5',
-    alt: 'Acting Fiction',
+    alt: 'Fiction Acting',
     title: 'Acting Fiction',
-    description: 'Fiction acting portfolio'
+    description: 'Fiction acting portfolio',
+    route: '/fiction-actings'
   },
   {
     url: 'https://picsum.photos/800/800?random=6',
-    alt: 'Art',
+    alt: 'Arts',
     title: 'Art',
-    description: 'Artistic work'
+    description: 'Artistic work',
+    route: '/arts'
   },
   {
     url: 'https://picsum.photos/800/800?random=7',
-    alt: 'Acting Corporate',
+    alt: 'Commercial Acting',
     title: 'Acting Corporate',
-    description: 'Corporate acting work'
+    description: 'Corporate acting work',
+    route: '/commercial-actings'
   },
   {
     url: 'https://picsum.photos/800/800?random=8',
-    alt: 'Fashion',
+    alt: 'Fashion Modeling',
     title: 'Fashion',
-    description: 'Fashion portfolio'
+    description: 'Fashion modeling portfolio',
+    route: '/fashion-modelings'
   },
   {
     url: 'https://picsum.photos/800/800?random=9',
-    alt: 'Modeling Corporate',
+    alt: 'Corporate Modeling',
     title: 'Modeling Corporate',
-    description: 'Corporate modeling work'
+    description: 'Corporate modeling work',
+    route: '/corporate-modelings'
   }
 ];
 

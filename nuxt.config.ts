@@ -5,6 +5,12 @@ export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4,
   },
+  runtimeConfig: {
+    public: {
+      vamsUrl: process.env.VAMS_URL,
+      vamsBgApiKey: process.env.VAMS_BG_API_KEY,
+    }
+  },
   modules: [
     '@nuxt/fonts',
     '@nuxt/ui',
