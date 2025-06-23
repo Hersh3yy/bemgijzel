@@ -5,6 +5,9 @@
       <NuxtLink to="/">
         <img src="/icons/BG_LOGO.png" alt="Site Logo" class="navbar-logo" />
       </NuxtLink>
+      <a href="https://www.youtube.com/@benjamingijzel" target="_blank" aria-label="YouTube">
+        <UIcon name="i-mdi-youtube" class="navbar-social-icon" />
+      </a>
       <a href="https://www.spotlight.com/1234-5678-9012" target="_blank" aria-label="Spotlight">
         <UIcon name="i-mdi-theater" class="navbar-social-icon" />
       </a>
@@ -17,19 +20,28 @@
       <a href="https://www.facebook.com/profile.php?id=100012437895143" target="_blank" aria-label="Facebook">
         <UIcon name="i-mdi-facebook" class="navbar-social-icon" />
       </a>
-      <a href="https://www.youtube.com/@benjamingijzel" target="_blank" aria-label="YouTube">
-        <UIcon name="i-mdi-youtube" class="navbar-social-icon" />
-      </a>
     </div>
 
     <!-- Navigation Links -->
     <div class="flex items-center space-x-2">
       <UDropdownMenu :items="actingDropdownItems" :ui="{ content: 'w-48' }">
-        <UButton label="Acting" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
+        <UButton 
+          label="Acting" 
+          color="primary" 
+          variant="ghost" 
+          class="navbar-link hover:navbar-link-hover"
+          trailing-icon="i-heroicons-chevron-down"
+        />
       </UDropdownMenu>
 
       <UDropdownMenu :items="modelingDropdownItems" :ui="{ content: 'w-48' }">
-        <UButton label="Modeling" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
+        <UButton 
+          label="Modeling" 
+          color="primary" 
+          variant="ghost" 
+          class="navbar-link hover:navbar-link-hover"
+          trailing-icon="i-heroicons-chevron-down"
+        />
       </UDropdownMenu>
 
       <NuxtLink to="/albums/arts">
@@ -42,17 +54,16 @@
 <script setup lang="ts">
 const actingDropdownItems = [
   [
-    { label: 'Fiction', to: '/albums/fiction' },
-    { label: 'Corporate', to: '/albums/corporate' },
-    { label: 'Music', to: '/albums/music' },
-    { label: 'Commercials', to: '/albums/commercials' }
+    { label: 'Fiction', to: '/albums/FictionActings' },
+    { label: 'Music', to: '/albums/MusicVideos' },
+    { label: 'Commercials', to: '/albums/CommercialActings' }
   ]
 ];
 
 const modelingDropdownItems = [
   [
-    { label: 'Corporate', to: '/albums/corporate' },
-    { label: 'Fashion', to: '/albums/fashion' }
+    { label: 'Corporate', to: '/albums/CorporateModelings' },
+    { label: 'Fashion', to: '/albums/FashionModelings' }
   ]
 ];
 </script>

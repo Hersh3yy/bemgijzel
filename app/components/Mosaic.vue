@@ -82,7 +82,7 @@ const router = useRouter();
 // Split images into columns based on their titles
 const firstColumnImages = computed(() => {
   return props.images.filter(img => 
-    ['Click here to see what\'s new', 'Showreels', 'Commercials', 'Music Videos'].includes(img.title)
+    ['Latest', 'Showreels', 'Commercials', 'Music Videos'].includes(img.title)
   );
 });
 
@@ -122,16 +122,33 @@ const navigateToPage = (image: MosaicImage) => {
 <style scoped>
 .mosaic-grid {
   display: grid;
-  grid-template-columns: 20% 40% 40%;
+  grid-template-columns: 33% 33% 34%;
   gap: 1rem;
   padding: 1rem;
   min-height: 100vh;
+  align-items: stretch;
 }
 
 .mosaic-column {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  height: 100%;
+}
+
+.first-column .mosaic-item {
+  /* 4 items in first column - smaller aspect ratio */
+  aspect-ratio: 4/3;
+}
+
+.second-column .mosaic-item {
+  /* 2 items in second column - larger aspect ratio */
+  aspect-ratio: 4/5;
+}
+
+.third-column .mosaic-item {
+  /* 3 items in third column - medium aspect ratio */
+  aspect-ratio: 4/4;
 }
 
 .mosaic-item {
@@ -139,7 +156,8 @@ const navigateToPage = (image: MosaicImage) => {
   overflow: hidden;
   border-radius: 0.5rem;
   cursor: pointer;
-  aspect-ratio: 1;
+  flex: 1;
+  min-height: 150px;
 }
 
 .overlay {
@@ -163,17 +181,26 @@ const navigateToPage = (image: MosaicImage) => {
 @media (max-width: 1024px) {
   .mosaic-grid {
     grid-template-columns: 1fr;
+    min-height: auto;
   }
 
   .mosaic-column {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    height: auto;
+  }
+  
+  .mosaic-item,
+  .first-column .mosaic-item,
+  .second-column .mosaic-item,
+  .third-column .mosaic-item {
+    aspect-ratio: 1;
   }
 }
 
 @media (max-width: 480px) {
   .mosaic-column {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 }
 </style> 

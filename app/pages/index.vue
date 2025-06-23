@@ -5,15 +5,6 @@
       <UIcon name="i-heroicons-arrow-path" class="animate-spin text-site-gold-500 text-2xl" />
     </div>
 
-    <!-- Error state with fallback -->
-    <div v-else-if="error">
-      <div class="text-center py-4 mb-6">
-        <p class="text-error-500 text-sm">{{ error }}</p>
-        <p class="text-gray-600 text-sm">Showing default layout</p>
-      </div>
-      <Mosaic :images="fallbackMosaicImages" />
-    </div>
-
     <!-- Dynamic mosaic from API -->
     <DynamicMosaic v-else-if="mosaicData" :mosaic-data="mosaicData" />
 
@@ -63,66 +54,75 @@ const mosaicData = ref<MosaicData | null>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 
-// Fallback hardcoded mosaic images (keep current design as fallback)
+// Fallback hardcoded mosaic images - 3 columns: 4, 2, 3 items respectively
 const fallbackMosaicImages: MosaicImage[] = [
+  // Column 1 - 4 items (using titles that Mosaic component recognizes)
   {
-    url: 'https://picsum.photos/800/800?random=1',
+    url: 'https://picsum.photos/800/600?random=1',
     alt: 'Latest Updates',
-    title: 'Click here to see what\'s new',
-    description: 'Latest updates and news'
+    title: 'Latest',
+    description: 'Latest updates and news',
+    route: '/latest'
   },
   {
-    url: 'https://picsum.photos/800/800?random=2',
+    url: 'https://picsum.photos/800/500?random=2',
     alt: 'Showreels',
     title: 'Showreels',
-    description: 'View our showreels'
+    description: 'View our showreels',
+    route: '/showreels'
   },
   {
-    url: 'https://picsum.photos/800/800?random=3',
-    alt: 'Commercials',
+    url: 'https://picsum.photos/800/700?random=3',
+    alt: 'Commercial Actings',
     title: 'Commercials',
-    description: 'Commercial work'
+    description: 'Commercial acting work',
+    route: '/albums/CommercialActings'
   },
   {
-    url: 'https://picsum.photos/800/800?random=4',
+    url: 'https://picsum.photos/800/550?random=4',
     alt: 'Music Videos',
     title: 'Music Videos',
-    description: 'Music video productions'
+    description: 'Music video productions',
+    route: '/albums/MusicVideos'
   },
+  
+  // Column 2 - 2 items  
   {
     url: 'https://picsum.photos/800/800?random=5',
-    alt: 'Fiction Acting',
+    alt: 'Fiction Actings',
     title: 'Acting Fiction',
     description: 'Fiction acting portfolio',
-    route: '/fiction-actings'
+    route: '/albums/FictionActings'
   },
   {
     url: 'https://picsum.photos/800/800?random=6',
-    alt: 'Arts',
+    alt: 'Art',
     title: 'Art',
     description: 'Artistic work',
-    route: '/arts'
+    route: '/albums/Art'
   },
+  
+  // Column 3 - 3 items
   {
-    url: 'https://picsum.photos/800/800?random=7',
-    alt: 'Commercial Acting',
+    url: 'https://picsum.photos/800/600?random=7',
+    alt: 'Commercial Actings',
     title: 'Acting Corporate',
-    description: 'Corporate acting work',
-    route: '/commercial-actings'
+    description: 'Commercial acting work',
+    route: '/albums/CommercialActings'
   },
   {
-    url: 'https://picsum.photos/800/800?random=8',
-    alt: 'Fashion Modeling',
+    url: 'https://picsum.photos/800/650?random=8',
+    alt: 'Fashion Modelings',
     title: 'Fashion',
     description: 'Fashion modeling portfolio',
-    route: '/fashion-modelings'
+    route: '/albums/FashionModelings'
   },
   {
-    url: 'https://picsum.photos/800/800?random=9',
-    alt: 'Corporate Modeling',
+    url: 'https://picsum.photos/800/550?random=9',
+    alt: 'Corporate Modelings',
     title: 'Modeling Corporate',
     description: 'Corporate modeling work',
-    route: '/corporate-modelings'
+    route: '/albums/CorporateModelings'
   }
 ];
 
@@ -139,7 +139,8 @@ const fetchMosaic = async () => {
     console.log('Index page - API Key exists:', !!apiKey);
     
     if (!apiUrl) {
-      throw new Error('API URL not configured. Please check your environment variables.');
+      console.warn('API URL not configured, using fallback mosaic');
+      return;
     }
     
     // You can make this configurable later or fetch a specific mosaic by title
@@ -160,9 +161,8 @@ const fetchMosaic = async () => {
     console.log('Mosaic response status:', response.status);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Mosaic response error:', errorText);
-      throw new Error(`Failed to fetch mosaic data (${response.status}): ${errorText}`);
+      console.warn('Could not fetch dynamic mosaic, using fallback');
+      return;
     }
     
     const apiResponse = await response.json();
@@ -170,8 +170,7 @@ const fetchMosaic = async () => {
     
     mosaicData.value = apiResponse.data?.data || apiResponse.data || apiResponse;
   } catch (err) {
-    console.error('Error fetching mosaic data:', err);
-    error.value = err instanceof Error ? err.message : 'Failed to load dynamic layout';
+    console.warn('Using fallback mosaic due to API error:', err);
   } finally {
     loading.value = false;
   }
