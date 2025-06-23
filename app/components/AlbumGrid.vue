@@ -156,11 +156,12 @@ const fetchAlbum = async () => {
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json'
     };
     
     // Add API key header if available
     if (runtimeConfig.public.vamsBgApiKey) {
-      headers['x-api-key'] = runtimeConfig.public.vamsBgApiKey as string;
+      headers['X-API-Key'] = runtimeConfig.public.vamsBgApiKey as string;
     }
     
     console.log('Fetching from:', url);

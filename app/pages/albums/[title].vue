@@ -30,14 +30,31 @@
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="image in images" :key="image.id" class="image-card">
               <div class="image-container block rounded-lg overflow-hidden cursor-pointer" @click="openFullscreen(image)">
-                <img 
-                  :src="image.thumbnail_url || image.path" 
-                  :alt="image.caption || 'Album image'" 
-                  class="w-full aspect-[4/3] object-cover transition-all duration-300"
-                />
+                <!-- Video thumbnail with play button -->
+                <template v-if="isVideoItem(image)">
+                  <img 
+                    :src="image.thumbnail_url || getVideoThumbnail(image)" 
+                    :alt="image.caption || 'Video thumbnail'" 
+                    class="w-full aspect-[4/3] object-cover transition-all duration-300"
+                  />
+                  <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
+                    <UIcon name="i-heroicons-play" class="text-4xl text-white" />
+                  </div>
+                </template>
+                
+                <!-- Regular image -->
+                <template v-else>
+                  <img 
+                    :src="image.thumbnail_url || image.path" 
+                    :alt="image.caption || 'Album image'" 
+                    class="w-full aspect-[4/3] object-cover transition-all duration-300"
+                  />
+                </template>
+                
                 <div class="middle-overlay">
                   <div class="middle-overlay-text">
                     <p v-if="image.caption" class="text-sm">{{ image.caption }}</p>
+                    <p v-else-if="image.title" class="text-sm">{{ image.title }}</p>
                   </div>
                 </div>
               </div>
@@ -54,7 +71,7 @@
 
       <!-- Fullscreen viewer -->
       <ImageViewer 
-        v-if="showFullscreen" 
+        v-if="showFullscreen && selectedImage" 
         :images="images" 
         :initialImage="selectedImage"
         @close="closeFullscreen"
@@ -104,21 +121,82 @@ const fetchAlbum = async () => {
   error.value = null;
   
   try {
-    const response = await fetch(`${useRuntimeConfig().public.apiUrl}/albums/title/${route.params.title}`, {
-      headers: {
-        'Authorization': `Bearer ${useRuntimeConfig().public.apiKey}`
-      }
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch album');
+    const config = useRuntimeConfig();
+    const apiUrl = config.public.apiUrl || config.public.vamsUrl;
+    const apiKey = config.public.apiKey || config.public.vamsBgApiKey;
+    
+    console.log('API URL:', apiUrl);
+    console.log('API Key exists:', !!apiKey);
+    console.log('Route params:', route.params);
+    
+    if (!apiUrl) {
+      error.value = 'API URL not configured. Please check your environment variables (VAMS_URL).';
+      return;
     }
     
-    const data = await response.json();
-    album.value = data.album;
-    images.value = data.images.filter((img: Image | null): img is Image => img !== null);
+    if (!route.params.title) {
+      error.value = 'Album title is required.';
+      return;
+    }
+    
+    const url = `${apiUrl}/public/albums/by-title/${route.params.title}`;
+    console.log('Fetching from URL:', url);
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    if (apiKey) {
+      headers['X-API-Key'] = apiKey;
+    }
+    
+    const response = await fetch(url, { headers });
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', [...response.headers.entries()]);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Response error:', errorText);
+      
+      // More specific error messages based on status code
+      if (response.status === 404) {
+        error.value = `Album "${route.params.title}" not found.`;
+      } else if (response.status === 401) {
+        error.value = 'Authentication failed. Please check your API key.';
+      } else if (response.status === 403) {
+        error.value = 'Access forbidden. You may not have permission to view this album.';
+      } else if (response.status >= 500) {
+        error.value = 'Server error. Please try again later.';
+      } else {
+        error.value = `Failed to fetch album (${response.status}): ${errorText}`;
+      }
+      return;
+    }
+    
+    const apiResponse = await response.json();
+    console.log('API Response:', apiResponse);
+    
+    // Handle the nested response structure
+    album.value = apiResponse.data?.album || apiResponse.album;
+    images.value = (apiResponse.data?.images || apiResponse.images || [])
+      .filter((img: Image | null): img is Image => img !== null);
+    
+    console.log('Album:', album.value);
+    console.log('Images count:', images.value.length);
+    
+    // If no album found but no error, show appropriate message
+    if (!album.value) {
+      error.value = `Album "${route.params.title}" not found in the response.`;
+    }
+    
   } catch (err) {
     console.error('Error fetching album data:', err);
-    error.value = err instanceof Error ? err.message : 'An error occurred while fetching the album';
+    if (err instanceof TypeError && err.message.includes('fetch')) {
+      error.value = 'Network error. Please check your internet connection and API URL.';
+    } else {
+      error.value = err instanceof Error ? err.message : 'An unexpected error occurred while fetching the album';
+    }
   } finally {
     loading.value = false;
   }
@@ -132,6 +210,23 @@ const openFullscreen = (image: Image) => {
 const closeFullscreen = () => {
   showFullscreen.value = false;
   selectedImage.value = null;
+};
+
+const isVideoItem = (image: Image) => {
+  // Check if the path contains common video URL patterns
+  const path = image.path.toLowerCase();
+  return path.includes('youtube.com') || 
+         path.includes('youtu.be') || 
+         path.includes('vimeo.com') || 
+         (image.properties && typeof image.properties === 'string' && 
+          JSON.parse(image.properties).type === 'video') ||
+         (image.properties && typeof image.properties === 'object' && 
+          image.properties.type === 'video');
+};
+
+const getVideoThumbnail = (image: Image) => {
+  // Fallback thumbnail for videos
+  return `https://picsum.photos/800/600?random=${image.id.slice(-3)}`;
 };
 
 onMounted(() => {

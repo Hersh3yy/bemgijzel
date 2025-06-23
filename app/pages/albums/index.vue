@@ -53,13 +53,52 @@ const error = ref<string | null>(null);
 
 const fetchAlbums = async () => {
   try {
-    const response = await fetch('https://vams-main-qvek1c.laravel.cloud/api/albums');
-    if (!response.ok) {
-      throw new Error('Failed to fetch albums');
+    const config = useRuntimeConfig();
+    const apiUrl = config.public.apiUrl || config.public.vamsUrl;
+    const apiKey = config.public.apiKey || config.public.vamsBgApiKey;
+    
+    console.log('Albums index - API URL:', apiUrl);
+    console.log('Albums index - API Key exists:', !!apiKey);
+    
+    if (!apiUrl) {
+      throw new Error('API URL not configured. Please check your environment variables.');
     }
+    
+    // Try the public endpoint first, then fallback to authenticated endpoint
+    let url = `${apiUrl}/public/albums`;
+    let headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    
+    console.log('Fetching albums from URL:', url);
+    
+    let response = await fetch(url, { headers });
+    
+    console.log('Albums response status:', response.status);
+    
+    // If public endpoint fails, try authenticated endpoint
+    if (!response.ok && apiKey) {
+      console.log('Public endpoint failed, trying authenticated endpoint...');
+      url = `${apiUrl}/albums`;
+      headers['X-API-Key'] = apiKey;
+      response = await fetch(url, { headers });
+      console.log('Authenticated albums response status:', response.status);
+    }
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Albums response error:', errorText);
+      throw new Error(`Failed to fetch albums (${response.status}): ${errorText}`);
+    }
+    
     const data = await response.json();
-    albums.value = data.albums;
+    console.log('Albums API Response:', data);
+    
+    // Handle different response structures
+    albums.value = data.albums || data.data?.albums || data.data || data || [];
   } catch (err) {
+    console.error('Error fetching albums:', err);
     error.value = err instanceof Error ? err.message : 'An error occurred while fetching albums';
   } finally {
     loading.value = false;

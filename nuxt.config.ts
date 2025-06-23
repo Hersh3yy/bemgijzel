@@ -9,6 +9,8 @@ export default defineNuxtConfig({
     public: {
       vamsUrl: process.env.VAMS_URL,
       vamsBgApiKey: process.env.VAMS_BG_API_KEY,
+      apiUrl: process.env.VAMS_URL,
+      apiKey: process.env.VAMS_BG_API_KEY,
     }
   },
   modules: [

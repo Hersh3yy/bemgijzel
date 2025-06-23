@@ -24,13 +24,13 @@
 
     <!-- Navigation Links -->
     <div class="flex items-center space-x-2">
-      <UDropdown :items="actingDropdownItems" :popper="{ placement: 'bottom-start' }">
+      <UDropdownMenu :items="actingDropdownItems" :ui="{ content: 'w-48' }">
         <UButton label="Acting" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
-      </UDropdown>
+      </UDropdownMenu>
 
-      <UDropdown :items="modelingDropdownItems" :popper="{ placement: 'bottom-start' }">
+      <UDropdownMenu :items="modelingDropdownItems" :ui="{ content: 'w-48' }">
         <UButton label="Modeling" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
-      </UDropdown>
+      </UDropdownMenu>
 
       <NuxtLink to="/albums/arts">
         <UButton label="Art" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
