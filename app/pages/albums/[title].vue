@@ -29,7 +29,7 @@
           <!-- Images grid -->
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div v-for="image in images" :key="image.id" class="image-card">
-              <div class="image-container block rounded-lg overflow-hidden cursor-pointer" @click="openFullscreen(image)">
+              <div class="image-container block rounded-lg overflow-hidden cursor-pointer" @click="handleItemClick(image)">
                 <!-- Video thumbnail with play button -->
                 <template v-if="isVideoItem(image)">
                   <img 
@@ -69,10 +69,41 @@
         </template>
       </UCard>
 
-      <!-- Fullscreen viewer -->
+      <!-- Video Player Modal -->
+      <UModal v-model="showVideoPlayer" class="sm:max-w-4xl">
+        <UCard v-if="selectedVideo">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold">{{ selectedVideo.title }}</h3>
+              <UButton 
+                color="neutral" 
+                variant="ghost" 
+                icon="i-heroicons-x-mark-20-solid" 
+                @click="closeVideoPlayer"
+              />
+            </div>
+          </template>
+
+          <div class="aspect-video">
+            <iframe
+              :src="getYouTubeEmbedUrl(selectedVideo)"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              class="w-full h-full rounded-lg"
+            ></iframe>
+          </div>
+
+          <template #footer v-if="selectedVideo.caption">
+            <p class="text-sm text-gray-600">{{ selectedVideo.caption }}</p>
+          </template>
+        </UCard>
+      </UModal>
+
+      <!-- Fullscreen viewer for images -->
       <ImageViewer 
         v-if="showFullscreen && selectedImage" 
-        :images="images" 
+        :images="images.filter(img => !isVideoItem(img))" 
         :initialImage="selectedImage"
         @close="closeFullscreen"
       />
@@ -115,6 +146,8 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const showFullscreen = ref(false);
 const selectedImage = ref<Image | null>(null);
+const showVideoPlayer = ref(false);
+const selectedVideo = ref<Image | null>(null);
 
 const fetchAlbum = async () => {
   loading.value = true;
@@ -202,6 +235,19 @@ const fetchAlbum = async () => {
   }
 };
 
+const handleItemClick = (image: Image) => {
+  console.log('Item clicked:', image.title, image.path);
+  console.log('Is video item:', isVideoItem(image));
+  
+  if (isVideoItem(image)) {
+    console.log('Opening video player for:', image.title);
+    openVideoPlayer(image);
+  } else {
+    console.log('Opening fullscreen for:', image.title);
+    openFullscreen(image);
+  }
+};
+
 const openFullscreen = (image: Image) => {
   selectedImage.value = image;
   showFullscreen.value = true;
@@ -212,21 +258,114 @@ const closeFullscreen = () => {
   selectedImage.value = null;
 };
 
+const openVideoPlayer = (video: Image) => {
+  console.log('openVideoPlayer called with:', video.title);
+  console.log('Video properties:', video.properties);
+  selectedVideo.value = video;
+  showVideoPlayer.value = true;
+  console.log('showVideoPlayer set to:', showVideoPlayer.value);
+};
+
+const closeVideoPlayer = () => {
+  showVideoPlayer.value = false;
+  selectedVideo.value = null;
+};
+
 const isVideoItem = (image: Image) => {
+  // Check properties JSON for video type first
+  if (image.properties) {
+    try {
+      let properties;
+      if (typeof image.properties === 'string') {
+        properties = JSON.parse(image.properties);
+      } else {
+        properties = image.properties;
+      }
+      
+      if (properties.type === 'video') return true;
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+  
   // Check if the path contains common video URL patterns
   const path = image.path.toLowerCase();
   return path.includes('youtube.com') || 
          path.includes('youtu.be') || 
-         path.includes('vimeo.com') || 
-         (image.properties && typeof image.properties === 'string' && 
-          JSON.parse(image.properties).type === 'video') ||
-         (image.properties && typeof image.properties === 'object' && 
-          image.properties.type === 'video');
+         path.includes('vimeo.com');
 };
 
 const getVideoThumbnail = (image: Image) => {
+  // Try to get thumbnail from properties JSON
+  if (image.properties) {
+    try {
+      let properties;
+      if (typeof image.properties === 'string') {
+        properties = JSON.parse(image.properties);
+      } else {
+        properties = image.properties;
+      }
+      
+      if (properties.thumbnail_url) {
+        return properties.thumbnail_url;
+      }
+    } catch (e) {
+      console.warn('Failed to parse image properties for thumbnail:', e);
+    }
+  }
+  
+  // Check if thumbnail_url is directly available
+  if (image.thumbnail_url) {
+    return image.thumbnail_url;
+  }
+  
   // Fallback thumbnail for videos
   return `https://picsum.photos/800/600?random=${image.id.slice(-3)}`;
+};
+
+const getYouTubeEmbedUrl = (video: Image) => {
+  try {
+    // First try to get video_id from properties
+    if (video.properties) {
+      let properties;
+      if (typeof video.properties === 'string') {
+        properties = JSON.parse(video.properties);
+      } else {
+        properties = video.properties;
+      }
+      
+      if (properties.video_id) {
+        return `https://www.youtube.com/embed/${properties.video_id}`;
+      }
+    }
+    
+    // Try to get URL from properties.video_url if available
+    let url = video.path;
+    if (video.properties) {
+      try {
+        const properties = typeof video.properties === 'string' ? JSON.parse(video.properties) : video.properties;
+        if (properties.video_url) {
+          url = properties.video_url;
+        }
+      } catch (e) {
+        // Use path as fallback
+      }
+    }
+    
+    let videoId = '';
+    
+    // Handle different YouTube URL formats
+    if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('youtube.com/watch?v=')[1]?.split('&')[0] || '';
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+    }
+    
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+  } catch (error) {
+    console.error('Error parsing video URL:', error);
+    return '';
+  }
 };
 
 onMounted(() => {

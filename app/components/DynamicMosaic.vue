@@ -10,7 +10,7 @@
         v-for="item in getItemsForColumn(columnIndex - 1)" 
         :key="item.id"
         class="mosaic-item"
-        :class="{ 'clickable': isClickable(item) }"
+        :class="{ 'clickable': isClickable(item), 'video-item': isVideoItem(item) }"
         @click="isClickable(item) ? navigateToAlbum(item) : null"
       >
         <img 
@@ -18,6 +18,13 @@
           :alt="getImageAlt(item)"
           class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
+        
+        <!-- Video play icon overlay -->
+        <div v-if="isVideoItem(item)" class="video-overlay">
+          <UIcon name="i-heroicons-play" class="text-6xl text-white opacity-80" />
+        </div>
+        
+        <!-- Text overlay -->
         <div class="overlay" v-if="getItemTitle(item) || getItemDescription(item)">
           <h3 v-if="getItemTitle(item)" class="text-xl font-bold text-white">{{ getItemTitle(item) }}</h3>
           <p v-if="getItemDescription(item)" class="text-white">{{ getItemDescription(item) }}</p>
@@ -40,14 +47,15 @@ interface MosaicItem {
       title: string;
       cover_image_path: string;
     };
-    selected_image: {
+    selected_image?: {
       id: string;
       path: string;
       title: string | null;
       caption: string | null;
+      properties?: string; // JSON string containing additional properties
     };
-    title?: string;
     link?: string;
+    edit_text?: string; // This is what contains the display title
   };
   order: number;
   is_active: boolean;
@@ -97,27 +105,81 @@ const getItemsForColumn = (columnIndex: number) => {
 };
 
 const getImageUrl = (item: MosaicItem) => {
-  // Prefer selected_image path, fallback to album cover
-  return item.properties.selected_image?.path || 
-         item.properties.album?.cover_image_path || 
+  // First check if we have a selected_image
+  if (item.properties.selected_image) {
+    const selectedImage = item.properties.selected_image;
+    
+    // Parse properties JSON if it exists
+    let imageProperties = null;
+    if (selectedImage.properties) {
+      try {
+        imageProperties = JSON.parse(selectedImage.properties);
+      } catch (e) {
+        console.warn('Failed to parse image properties:', e);
+      }
+    }
+    
+    // For video items, use the thumbnail_url from properties
+    if (imageProperties?.type === 'video' && imageProperties?.thumbnail_url) {
+      return imageProperties.thumbnail_url;
+    }
+    
+    // For video URLs (YouTube, etc.), use thumbnail_url if available
+    const path = selectedImage.path.toLowerCase();
+    if ((path.includes('youtube.com') || path.includes('youtu.be') || path.includes('vimeo.com')) && imageProperties?.thumbnail_url) {
+      return imageProperties.thumbnail_url;
+    }
+    
+    // For regular images, use the path
+    return selectedImage.path;
+  }
+  
+  // Fallback to album cover
+  return item.properties.album?.cover_image_path || 
          'https://picsum.photos/800/800?random=' + item.id.slice(-1);
 };
 
 const getImageAlt = (item: MosaicItem) => {
   return item.properties.selected_image?.caption || 
+         item.properties.selected_image?.title ||
+         item.properties.edit_text ||
          item.properties.album?.title || 
          'Mosaic item';
 };
 
 const getItemTitle = (item: MosaicItem) => {
-  // Use the new title property first, then fallback to album title, or return empty string
-  return item.properties.title || item.properties.album?.title || '';
+  // Use edit_text first (this is the main display text from the API)
+  return item.properties.edit_text || 
+         item.properties.album?.title || 
+         '';
 };
 
 const getItemDescription = (item: MosaicItem) => {
-  return item.properties.selected_image?.title || 
-         item.properties.selected_image?.caption || 
+  return item.properties.selected_image?.caption || 
+         item.properties.selected_image?.title || 
          '';
+};
+
+const isVideoItem = (item: MosaicItem) => {
+  if (!item.properties.selected_image) return false;
+  
+  const selectedImage = item.properties.selected_image;
+  
+  // Check properties JSON for video type
+  if (selectedImage.properties) {
+    try {
+      const imageProperties = JSON.parse(selectedImage.properties);
+      if (imageProperties.type === 'video') return true;
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+  
+  // Check URL patterns
+  const path = selectedImage.path.toLowerCase();
+  return path.includes('youtube.com') || 
+         path.includes('youtu.be') || 
+         path.includes('vimeo.com');
 };
 
 const isClickable = (item: MosaicItem) => {
@@ -195,6 +257,20 @@ const navigateToAlbum = (item: MosaicItem) => {
   cursor: default;
 }
 
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease;
+}
+
+.mosaic-item:hover .video-overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .overlay {
   position: absolute;
   inset: 0;
@@ -211,6 +287,10 @@ const navigateToAlbum = (item: MosaicItem) => {
 
 .mosaic-item:hover .overlay {
   opacity: 1;
+}
+
+.video-item .overlay {
+  background: rgba(0, 0, 0, 0.7);
 }
 
 /* Mobile responsive - single column */

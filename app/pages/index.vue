@@ -144,7 +144,7 @@ const fetchMosaic = async () => {
     }
     
     // You can make this configurable later or fetch a specific mosaic by title
-    const mosaicTitle = 'main'; // or get from config/environment
+    const mosaicTitle = 'LandingPage'; // or get from config/environment
     const url = `${apiUrl}/public/mosaics/by-title/${mosaicTitle}`;
     console.log('Fetching mosaic from URL:', url);
     
