@@ -15,6 +15,8 @@
 
 <script setup lang="ts">
 import type { MosaicImage } from '~/components/Mosaic.vue';
+import { useApi } from '~/composables/useApi';
+import { logger } from '~/utils/logger';
 
 interface MosaicItem {
   id: string;
@@ -131,46 +133,16 @@ const fetchMosaic = async () => {
   error.value = null;
   
   try {
-    const config = useRuntimeConfig();
-    const apiUrl = config.public.apiUrl || config.public.vamsUrl;
-    const apiKey = config.public.apiKey || config.public.vamsBgApiKey;
-    
-    console.log('Index page - API URL:', apiUrl);
-    console.log('Index page - API Key exists:', !!apiKey);
-    
-    if (!apiUrl) {
-      console.warn('API URL not configured, using fallback mosaic');
-      return;
-    }
+    const { fetchApi } = useApi();
     
     // You can make this configurable later or fetch a specific mosaic by title
     const mosaicTitle = 'LandingPage'; // or get from config/environment
-    const url = `${apiUrl}/public/mosaics/by-title/${mosaicTitle}`;
-    console.log('Fetching mosaic from URL:', url);
     
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
-    if (apiKey) {
-      headers['X-API-Key'] = apiKey;
-    }
-    
-    const response = await fetch(url, { headers });
-    
-    console.log('Mosaic response status:', response.status);
-    
-    if (!response.ok) {
-      console.warn('Could not fetch dynamic mosaic, using fallback');
-      return;
-    }
-    
-    const apiResponse = await response.json();
-    console.log('Mosaic API Response:', apiResponse);
-    
-    mosaicData.value = apiResponse.data?.data || apiResponse.data || apiResponse;
+    const response = await fetchApi(`/public/mosaics/by-title/${mosaicTitle}`);
+    mosaicData.value = response;
   } catch (err) {
-    console.warn('Using fallback mosaic due to API error:', err);
+    logger.warn('Using fallback mosaic due to API error:', err);
+    // Fallback to static mosaic - this is expected behavior
   } finally {
     loading.value = false;
   }

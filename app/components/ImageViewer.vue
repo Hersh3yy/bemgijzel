@@ -29,7 +29,7 @@
       <!-- Content Area -->
       <div class="w-full h-full flex flex-col items-center justify-center">
         <!-- Video Player -->
-        <div v-if="isVideoItem(currentImage)" class="w-full max-w-4xl aspect-video">
+        <div v-if="currentImage && isVideoItem(currentImage)" class="w-full max-w-4xl aspect-video">
           <iframe
             :src="getYouTubeEmbedUrl(currentImage)"
             frameborder="0"
@@ -68,26 +68,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-
-interface Image {
-  id: string;
-  title: string | null;
-  description: string | null;
-  path: string;
-  webp_path: string | null;
-  thumbnail_url: string | null;
-  webp_url: string | null;
-  caption: string | null;
-  order: number;
-  properties: any;
-  created_at: string;
-  updated_at: string;
-}
+import type { AlbumImage } from '~/composables/useAlbum';
+import { useAlbum } from '~/composables/useAlbum';
 
 const props = defineProps<{
-  images: Image[];
-  initialImage: Image;
+  images: AlbumImage[];
+  initialImage: AlbumImage;
 }>();
 
 const emit = defineEmits<{
@@ -123,75 +109,7 @@ const close = () => {
   emit('close');
 };
 
-// Video detection
-const isVideoItem = (image: Image | undefined) => {
-  if (!image) return false;
-  
-  if (image.properties) {
-    try {
-      let properties;
-      if (typeof image.properties === 'string') {
-        properties = JSON.parse(image.properties);
-      } else {
-        properties = image.properties;
-      }
-      
-      if (properties.type === 'video') return true;
-    } catch (e) {
-      // Ignore parsing errors
-    }
-  }
-  
-  const path = image.path.toLowerCase();
-  return path.includes('youtube.com') || 
-         path.includes('youtu.be') || 
-         path.includes('vimeo.com');
-};
-
-// YouTube embed URL generation
-const getYouTubeEmbedUrl = (video: Image | undefined) => {
-  if (!video) return '';
-  
-  try {
-    if (video.properties) {
-      let properties;
-      if (typeof video.properties === 'string') {
-        properties = JSON.parse(video.properties);
-      } else {
-        properties = video.properties;
-      }
-      
-      if (properties.video_id) {
-        return `https://www.youtube.com/embed/${properties.video_id}`;
-      }
-    }
-    
-    let url = video.path;
-    if (video.properties) {
-      try {
-        const properties = typeof video.properties === 'string' ? JSON.parse(video.properties) : video.properties;
-        if (properties.video_url) {
-          url = properties.video_url;
-        }
-      } catch (e) {
-        // Use path as fallback
-      }
-    }
-    
-    let videoId = '';
-    
-    if (url.includes('youtube.com/watch?v=')) {
-      videoId = url.split('youtube.com/watch?v=')[1]?.split('&')[0] || '';
-    } else if (url.includes('youtu.be/')) {
-      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
-    }
-    
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
-  } catch (error) {
-    console.error('Error parsing video URL:', error);
-    return '';
-  }
-};
+const { isVideoItem, getYouTubeEmbedUrl } = useAlbum();
 
 // Keyboard navigation
 onMounted(() => {

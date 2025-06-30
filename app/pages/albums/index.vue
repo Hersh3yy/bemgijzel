@@ -10,8 +10,24 @@
           Browse through our collection of albums.
         </p>
 
+        <!-- Loading state -->
+        <div v-if="loading" class="flex justify-center py-8">
+          <UIcon name="i-heroicons-arrow-path" class="animate-spin text-site-gold-500 text-2xl" />
+        </div>
+
+        <!-- Error state -->
+        <div v-else-if="error" class="text-center py-12">
+          <p class="text-red-600 mb-4">{{ errorMessage }}</p>
+          <button 
+            @click="fetchAlbums"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+
         <!-- Albums grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-else-if="albums && albums.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="album in albums" :key="album.id" class="album-card">
             <NuxtLink :to="`/albums/${album.title}`" class="image-container block rounded-lg overflow-hidden">
               <img 
@@ -29,85 +45,42 @@
             </div>
           </div>
         </div>
+
+        <!-- Empty state -->
+        <div v-else class="text-center py-8">
+          <p class="text-site-gold-300">No albums found.</p>
+        </div>
       </div>
     </UCard>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import type { Album } from '~/composables/useAlbum';
+import { useAlbum } from '~/composables/useAlbum';
 
-interface Album {
-  id: string;
-  title: string;
-  description: string;
-  cover_image_path: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-}
+const { fetchAllAlbums } = useAlbum();
 
-const albums = ref<Album[]>([]);
-const loading = ref(true);
-const error = ref<string | null>(null);
-
-const fetchAlbums = async () => {
-  try {
-    const config = useRuntimeConfig();
-    const apiUrl = config.public.apiUrl || config.public.vamsUrl;
-    const apiKey = config.public.apiKey || config.public.vamsBgApiKey;
-    
-    console.log('Albums index - API URL:', apiUrl);
-    console.log('Albums index - API Key exists:', !!apiKey);
-    
-    if (!apiUrl) {
-      throw new Error('API URL not configured. Please check your environment variables.');
-    }
-    
-    // Try the public endpoint first, then fallback to authenticated endpoint
-    let url = `${apiUrl}/public/albums`;
-    let headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
-    
-    console.log('Fetching albums from URL:', url);
-    
-    let response = await fetch(url, { headers });
-    
-    console.log('Albums response status:', response.status);
-    
-    // If public endpoint fails, try authenticated endpoint
-    if (!response.ok && apiKey) {
-      console.log('Public endpoint failed, trying authenticated endpoint...');
-      url = `${apiUrl}/albums`;
-      headers['X-API-Key'] = apiKey;
-      response = await fetch(url, { headers });
-      console.log('Authenticated albums response status:', response.status);
-    }
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Albums response error:', errorText);
-      throw new Error(`Failed to fetch albums (${response.status}): ${errorText}`);
-    }
-    
-    const data = await response.json();
-    console.log('Albums API Response:', data);
-    
-    // Handle different response structures
-    albums.value = data.albums || data.data?.albums || data.data || data || [];
-  } catch (err) {
-    console.error('Error fetching albums:', err);
-    error.value = err instanceof Error ? err.message : 'An error occurred while fetching albums';
-  } finally {
-    loading.value = false;
+// Use Nuxt's built-in useAsyncData with SSR optimization and caching
+const { data: albumsData, status, error, refresh } = await useAsyncData<Album[]>(
+  'albums-list',
+  fetchAllAlbums,
+  {
+    // Automatically refresh on page focus
+    server: true,
+    // Default value while loading
+    default: () => []
   }
-};
+);
 
-onMounted(() => {
-  fetchAlbums();
-});
+const loading = computed(() => status.value === 'pending');
+const albums = computed(() => albumsData.value || []);
+const errorMessage = computed(() => error.value?.message || 'Failed to load albums');
+
+// Simple refresh function
+const fetchAlbums = () => {
+  refresh();
+};
 
 useHead({
   title: 'Albums',

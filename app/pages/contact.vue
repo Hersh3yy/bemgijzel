@@ -107,6 +107,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { logger } from '~/utils/logger'
 
 useHead({
   title: 'Contact - Benjamin Gijzel',
@@ -163,7 +164,7 @@ const sendEmail = async () => {
     }
     
   } catch (error: any) {
-    console.error('Error sending email:', error)
+    logger.error('Error sending email:', error)
     
     // Show user-friendly error messages
     if (error.statusCode === 400) {

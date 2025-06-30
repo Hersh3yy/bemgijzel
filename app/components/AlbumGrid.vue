@@ -8,15 +8,16 @@
 
       <div class="p-4">
         <!-- Loading state -->
-        <div v-if="loading" class="flex justify-center py-8">
-          <UIcon name="i-heroicons-arrow-path" class="animate-spin text-site-gold-500 text-2xl" />
-        </div>
+        <BaseLoading v-if="loading" message="Loading album..." />
 
         <!-- Error state -->
-        <div v-else-if="error" class="text-center py-8">
-          <p class="text-error-500">{{ error }}</p>
-          <UButton label="Try Again" icon="i-heroicons-arrow-path" class="mt-4" @click="fetchAlbum" />
-        </div>
+        <BaseError 
+          v-else-if="error" 
+          :message="errorMessage" 
+          title="Failed to Load Album"
+          show-retry 
+          @retry="fetchAlbum" 
+        />
 
         <!-- Empty state -->
         <div v-else-if="!images || images.length === 0" class="text-center py-8">
@@ -32,14 +33,16 @@
             @click="openImage(image.id)"
           >
             <!-- Video thumbnail with play button -->
-            <template v-if="isVideo(image)">
-              <img 
-                :src="image.thumbnail_url || ''" 
-                :alt="image.caption || 'Video thumbnail'" 
-                class="w-full h-full object-cover" 
-              />
-              <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-                <UIcon name="i-heroicons-play" class="text-4xl text-white" />
+            <template v-if="isVideoItem(image)">
+              <div class="relative w-full h-full">
+                <img 
+                  :src="getVideoThumbnail(image)" 
+                  :alt="image.caption || 'Video thumbnail'" 
+                  class="w-full h-full object-cover" 
+                />
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 hover:bg-opacity-40 transition-all duration-300">
+                  <UIcon name="i-heroicons-play" class="text-4xl text-white drop-shadow-lg" />
+                </div>
               </div>
             </template>
             
@@ -64,41 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-
-interface Album {
-  id: string;
-  title: string;
-  description: string;
-  cover_image_path: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ImageProperties {
-  webp_url?: string;
-  type?: string;
-  video_id?: string;
-  video_type?: string;
-  year?: number;
-  thumbnail_url?: string;
-}
-
-interface Image {
-  id: string;
-  title: string | null;
-  description: string | null;
-  path: string;
-  webp_path: string | null;
-  thumbnail_url: string | null;
-  webp_url: string | null;
-  caption: string | null;
-  order: number;
-  properties: string | ImageProperties;
-  created_at: string;
-  updated_at: string;
-}
+import type { Album, AlbumImage, AlbumData } from '~/composables/useAlbum';
+import { useAlbum } from '~/composables/useAlbum';
 
 interface Props {
   albumId?: string;
@@ -107,98 +77,49 @@ interface Props {
 
 const props = defineProps<Props>();
 const router = useRouter();
+const { fetchAlbumByTitle, fetchAlbumById, isVideoItem, getVideoThumbnail } = useAlbum();
 
-const album = ref<Album | null>(null);
-const images = ref<Image[]>([]);
-const loading = ref(true);
-const error = ref<string | null>(null);
-
-const isVideo = (image: Image) => {
-  if (typeof image.properties === 'string') {
-    try {
-      const props = JSON.parse(image.properties);
-      return props.type === 'video';
-    } catch {
-      return false;
-    }
+// Create fetcher function based on props
+const fetcher = async (): Promise<AlbumData> => {
+  if (!props.albumId && !props.albumTitle) {
+    throw new Error('Either albumId or albumTitle must be provided');
   }
-  return image.properties?.type === 'video';
+  
+  if (props.albumId) {
+    return await fetchAlbumById(props.albumId);
+  } else {
+    return await fetchAlbumByTitle(props.albumTitle!);
+  }
 };
+
+// Use Nuxt's built-in useAsyncData with automatic caching and SSR optimization
+const { data: albumData, status, error, refresh } = await useAsyncData(
+  // Unique key for caching - changes when props change
+  () => `album-${props.albumId || props.albumTitle}`,
+  fetcher,
+  {
+    // Transform the data and ensure proper type safety
+    transform: (data: AlbumData) => data,
+    // Don't fetch on server if we want client-side only (optional)
+    server: true,
+    // Use lazy loading for better UX (optional)
+    lazy: false
+  }
+);
+
+const loading = computed(() => status.value === 'pending');
+const errorMessage = computed(() => error.value?.message || 'An error occurred while loading the album');
+const album = computed(() => albumData.value?.album || null);
+const images = computed(() => albumData.value?.images || []);
 
 const openImage = (imageId: string) => {
   router.push(`/albums/${imageId}`);
 };
 
-const fetchAlbum = async () => {
-  loading.value = true;
-  error.value = null;
-  
-  try {
-    const runtimeConfig = useRuntimeConfig();
-    let baseUrl = runtimeConfig.public.vamsUrl || 'localhost:8000';
-    
-    // Ensure baseUrl doesn't have protocol prefix
-    baseUrl = baseUrl.replace(/^https?:\/\//, '');
-    
-    if (!baseUrl) {
-      throw new Error('VAMS_URL environment variable is not configured');
-    }
-    
-    let url = '';
-    
-    if (props.albumId) {
-      url = `http://${baseUrl}/api/albums/${props.albumId}`;
-    } else if (props.albumTitle) {
-      url = `http://${baseUrl}/api/public/albums/by-title/${props.albumTitle}`;
-    } else {
-      throw new Error('Either albumId or albumTitle must be provided');
-    }
-    
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
-    
-    // Add API key header if available
-    if (runtimeConfig.public.vamsBgApiKey) {
-      headers['X-API-Key'] = runtimeConfig.public.vamsBgApiKey as string;
-    }
-    
-    console.log('Fetching from:', url);
-    console.log('Headers:', headers);
-    
-    const response = await fetch(url, { headers });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch album: ${response.status} ${response.statusText}`);
-    }
-    
-    const apiResponse = await response.json();
-    console.log('API Response:', apiResponse);
-    
-    // Handle the nested response structure
-    if (apiResponse.data && apiResponse.data.data) {
-      album.value = apiResponse.data.data.album;
-      
-      // Parse properties for each image if it's a string
-      images.value = apiResponse.data.data.images.map((img: Image) => ({
-        ...img,
-        properties: typeof img.properties === 'string' ? JSON.parse(img.properties) : img.properties
-      }));
-    } else {
-      throw new Error('Invalid response structure');
-    }
-  } catch (err) {
-    console.error('Error fetching album data:', err);
-    error.value = err instanceof Error ? err.message : 'An error occurred while fetching the album';
-  } finally {
-    loading.value = false;
-  }
+// Simple refresh function
+const fetchAlbum = () => {
+  refresh();
 };
-
-onMounted(() => {
-  fetchAlbum();
-});
 </script>
 
 <style scoped>

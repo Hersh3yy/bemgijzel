@@ -15,32 +15,32 @@
     <div v-else>
       <UCard>
         <template #header>
-          <h1 class="text-3xl font-bold text-center" :style="{ color: 'var(--color-site-gold-500)' }">Showreels</h1>
+          <h1 class="text-3xl font-bold text-center" :style="{ color: 'var(--color-site-gold-500)' }">What's new</h1>
           <p v-if="album && album.description" class="text-center mt-2" :style="{ color: 'var(--color-site-gold-100)' }">{{ album.description }}</p>
-          <p v-else class="text-center mt-2" :style="{ color: 'var(--color-site-gold-100)' }">View our collection of showreels and video highlights.</p>
+          <p v-else class="text-center mt-2" :style="{ color: 'var(--color-site-gold-100)' }">Latest posted content and updates.</p>
         </template>
 
         <div class="p-4">
           <!-- Empty state -->
-          <div v-if="!videos || videos.length === 0" class="text-center py-8">
-            <p :style="{ color: 'var(--color-site-gold-100)' }">No showreels found.</p>
+          <div v-if="!images || images.length === 0" class="text-center py-8">
+            <p :style="{ color: 'var(--color-site-gold-100)' }">No latest updates found.</p>
             <UButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" class="mt-4" />
           </div>
 
-          <!-- Vertical feed layout for showreels -->
-          <div v-else class="showreels-feed space-y-6 max-w-3xl mx-auto">
+          <!-- Vertical feed layout for latest content -->
+          <div v-else class="latest-feed space-y-6 max-w-2xl mx-auto">
             <div 
-              v-for="video in videos" 
-              :key="video.id" 
-              class="showreel-item rounded-lg overflow-hidden shadow-lg cursor-pointer"
-              @click="handleItemClick(video)"
+              v-for="image in images" 
+              :key="image.id" 
+              class="feed-item rounded-lg overflow-hidden shadow-lg cursor-pointer"
+              @click="handleItemClick(image)"
             >
               <!-- Video thumbnail with play button -->
-              <template v-if="isVideoItem(video)">
+              <template v-if="isVideoItem(image)">
                 <div class="relative aspect-video">
                   <img 
-                    :src="getVideoThumbnail(video)" 
-                    :alt="video.caption || 'Showreel thumbnail'" 
+                    :src="getVideoThumbnail(image)" 
+                    :alt="image.caption || 'Video thumbnail'" 
                     class="w-full h-full object-cover transition-all duration-300"
                   />
                   <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 hover:bg-opacity-40 transition-all duration-300">
@@ -49,26 +49,21 @@
                 </div>
               </template>
               
-              <!-- Regular image (treated as video item for showreels) -->
+              <!-- Regular image -->
               <template v-else>
-                <div class="relative aspect-video">
-                  <img 
-                    :src="video.thumbnail_url || video.path" 
-                    :alt="video.caption || 'Showreel thumbnail'" 
-                    class="w-full h-full object-cover transition-all duration-300"
-                  />
-                  <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-                    <UIcon name="i-heroicons-play" class="text-6xl text-white opacity-80" />
-                  </div>
-                </div>
+                <img 
+                  :src="image.thumbnail_url || image.path" 
+                  :alt="image.caption || 'Latest content'" 
+                  class="w-full aspect-video object-cover transition-all duration-300"
+                />
               </template>
               
               <div class="p-4">
                 <h3 class="text-lg font-semibold mb-2" :style="{ color: 'var(--color-site-gold-500)' }">
-                  {{ video.title || video.caption || 'Showreel' }}
+                  {{ image.title || image.caption || 'Latest Update' }}
                 </h3>
-                <p v-if="video.description || video.caption" class="text-sm" :style="{ color: 'var(--color-site-gold-100)' }">
-                  {{ video.description || video.caption }}
+                <p v-if="image.description || image.caption" class="text-sm" :style="{ color: 'var(--color-site-gold-100)' }">
+                  {{ image.description || image.caption }}
                 </p>
               </div>
             </div>
@@ -94,44 +89,47 @@
 </template>
 
 <script setup lang="ts">
-import type { AlbumData, AlbumImage } from '~/composables/useAlbum';
+import type { Album, AlbumImage, AlbumData } from '~/composables/useAlbum';
 import { useAlbum } from '~/composables/useAlbum';
 
-const { fetchAlbumByTitle, isVideoItem, getVideoThumbnail, getYouTubeEmbedUrl } = useAlbum();
+const { fetchAlbumByTitle, isVideoItem, getVideoThumbnail } = useAlbum();
 
 const showFullscreen = ref(false);
 const selectedImage = ref<AlbumImage | null>(null);
 
-// Use Nuxt's built-in useAsyncData for the "Showreels" album
+// Use Nuxt's built-in useAsyncData for the "Latest" album
 const { data: albumData, status, error } = await useAsyncData<AlbumData>(
-  'showreels-album',
-  () => fetchAlbumByTitle('Showreels'),
+  'latest-album',
+  () => fetchAlbumByTitle('Latest'),
   {
-    server: true
+    server: true,
+    // Transform to sort images by newest first
+    transform: (data: AlbumData) => {
+      if (data?.images) {
+        const sortedImages = [...data.images].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        return { ...data, images: sortedImages };
+      }
+      return data;
+    }
   }
 );
 
 const loading = computed(() => status.value === 'pending');
-const errorMessage = computed(() => error.value?.message || 'Failed to load showreels');
+const errorMessage = computed(() => error.value?.message || 'Failed to load latest updates');
 const album = computed(() => albumData.value?.album || null);
-const videos = computed(() => {
-  const allImages = albumData.value?.images || [];
-  return allImages.filter(isVideoItem);
-});
-
-const getEmbedUrl = (video: any) => {
-  return getYouTubeEmbedUrl(video);
-};
+const images = computed(() => albumData.value?.images || []);
 
 // Create a mutable copy for the ImageViewer component
-const mutableImages = computed(() => [...videos.value]);
+const mutableImages = computed(() => [...images.value]);
 
-const handleItemClick = (video: AlbumImage) => {
-  openFullscreen(video);
+const handleItemClick = (image: AlbumImage) => {
+  openFullscreen(image);
 };
 
-const openFullscreen = (video: AlbumImage) => {
-  selectedImage.value = video;
+const openFullscreen = (image: AlbumImage) => {
+  selectedImage.value = image;
   showFullscreen.value = true;
 };
 
@@ -140,13 +138,13 @@ const closeFullscreen = () => {
   selectedImage.value = null;
 };
 
-// Update page metadata
+// Enhanced page metadata
 useHead({
-  title: 'Showreels',
+  title: 'Latest Updates',
   meta: [
     { 
-      name: 'description', 
-      content: () => album.value?.description || 'Video showreels and highlights'
+      name: 'description',
+      content: () => album.value?.description || 'Latest posted content and updates'
     }
   ]
 });
@@ -157,26 +155,19 @@ useHead({
   padding: 2rem;
 }
 
-.showreels-feed {
+.latest-feed {
   /* Natural page scroll - no height constraints */
 }
 
-.showreel-item {
+.feed-item {
   background: var(--color-site-black);
   border: 1px solid var(--color-site-gold-700);
   transition: all 0.3s ease;
 }
 
-.showreel-item:hover {
+.feed-item:hover {
   transform: translateY(-2px);
   border-color: var(--color-site-gold-500);
   box-shadow: 0 8px 25px rgba(196, 147, 38, 0.2);
-}
-
-.showreel-item:hover .relative::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.2);
 }
 </style> 

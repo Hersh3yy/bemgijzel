@@ -7,12 +7,12 @@
       :class="getColumnClass(columnIndex - 1)"
     >
       <div 
-        v-for="item in getItemsForColumn(columnIndex - 1)" 
+        v-for="item in getItemsForColumnIndex(columnIndex - 1)" 
         :key="item.id"
         class="mosaic-item"
         :class="{ 'clickable': isClickable(item), 'video-item': isVideoItem(item) }"
         :style="{ height: getTileHeight(columnIndex - 1) }"
-        @click="isClickable(item) ? navigateToAlbum(item) : null"
+        @click="isClickable(item) ? navigateToItem(item) : null"
       >
         <img 
           :src="getImageUrl(item)"
@@ -36,91 +36,40 @@
 </template>
 
 <script setup lang="ts">
-interface MosaicItem {
-  id: string;
-  column_index: number;
-  type: string;
-  content: string | null;
-  album_id: string | null;
-  properties: {
-    album: {
-      id: string;
-      title: string;
-      cover_image_path: string;
-    };
-    selected_image?: {
-      id: string;
-      path: string;
-      title: string | null;
-      caption: string | null;
-      properties?: string; // JSON string containing additional properties
-    };
-    link?: string;
-    edit_text?: string; // This is what contains the display title
-  };
-  order: number;
-  is_active: boolean;
-}
-
-interface MosaicData {
-  mosaic: {
-    id: string;
-    title: string;
-    description: string;
-    columns: number;
-    display_settings: any;
-  };
-  items: MosaicItem[];
-}
+import type { MosaicItem, MosaicData } from '~/composables/useMosaic';
+import { useMosaic } from '~/composables/useMosaic';
 
 const props = defineProps<{
   mosaicData: MosaicData;
 }>();
 
-const router = useRouter();
+const {
+  getImageUrl,
+  getImageAlt,
+  getItemTitle,
+  isVideoItem,
+  isClickable,
+  navigateToItem,
+  getItemsForColumn,
+  calculateColumnHeights,
+  calculateTileHeight
+} = useMosaic();
 
 const numberOfColumns = computed(() => props.mosaicData.mosaic.columns || 3);
 
-const getItemsForColumn = (columnIndex: number) => {
-  return props.mosaicData.items
-    .filter(item => item.column_index === columnIndex && item.is_active)
-    .sort((a, b) => a.order - b.order);
+const getItemsForColumnIndex = (columnIndex: number) => {
+  return getItemsForColumn(props.mosaicData.items, columnIndex);
 };
 
 // Calculate items count per column
 const itemsPerColumn = computed(() => {
-  const counts: number[] = [];
-  for (let i = 0; i < numberOfColumns.value; i++) {
-    const items = getItemsForColumn(i);
-    counts.push(items.length);
-  }
-  return counts;
-});
-
-// Find the maximum number of items in any column
-const maxItemsInColumn = computed(() => {
-  return Math.max(...itemsPerColumn.value);
+  return calculateColumnHeights(props.mosaicData.items, numberOfColumns.value);
 });
 
 // Calculate tile height for equal column heights
 const getTileHeight = (columnIndex: number) => {
   const itemsInThisColumn = itemsPerColumn.value[columnIndex] || 0;
-  if (itemsInThisColumn === 0) return '25vh';
-  
-  // Calculate height per tile to make all columns equal height
-  // Base calculation: if max column has 4 items, and this column has 2 items,
-  // then each tile should be twice as tall to fill the same space
-  const maxItems = maxItemsInColumn.value;
-  const tileHeightMultiplier = maxItems / itemsInThisColumn;
-  
-  // Base tile height (increased for better desktop viewing)
-  const baseTileHeight = 20; // Increased from 15vh
-  const calculatedHeight = baseTileHeight * tileHeightMultiplier;
-  
-  // Set minimum height to prevent overly short images
-  const minHeight = 25; // Minimum 25vh per tile
-  
-  return `${Math.max(calculatedHeight, minHeight)}vh`;
+  return calculateTileHeight(itemsInThisColumn);
 };
 
 const mosaicClasses = computed(() => ({
@@ -141,115 +90,7 @@ const getColumnClass = (columnIndex: number) => {
   return 'column-regular';
 };
 
-const getImageUrl = (item: MosaicItem) => {
-  // First check if we have a selected_image
-  if (item.properties.selected_image) {
-    const selectedImage = item.properties.selected_image;
-    
-    // Parse properties JSON if it exists
-    let imageProperties = null;
-    if (selectedImage.properties) {
-      try {
-        imageProperties = JSON.parse(selectedImage.properties);
-      } catch (e) {
-        console.warn('Failed to parse image properties:', e);
-      }
-    }
-    
-    // For video items, use the thumbnail_url from properties
-    if (imageProperties?.type === 'video' && imageProperties?.thumbnail_url) {
-      return imageProperties.thumbnail_url;
-    }
-    
-    // For video URLs (YouTube, etc.), use thumbnail_url if available
-    const path = selectedImage.path.toLowerCase();
-    if ((path.includes('youtube.com') || path.includes('youtu.be') || path.includes('vimeo.com')) && imageProperties?.thumbnail_url) {
-      return imageProperties.thumbnail_url;
-    }
-    
-    // For regular images, use the path
-    return selectedImage.path;
-  }
-  
-  // Fallback to album cover
-  return item.properties.album?.cover_image_path || 
-         'https://picsum.photos/800/800?random=' + item.id.slice(-1);
-};
-
-const getImageAlt = (item: MosaicItem) => {
-  return item.properties.selected_image?.caption || 
-         item.properties.selected_image?.title ||
-         item.properties.edit_text ||
-         item.properties.album?.title || 
-         'Mosaic item';
-};
-
-const getItemTitle = (item: MosaicItem) => {
-  // Use edit_text first (this is the main display text from the API)
-  return item.properties.edit_text || 
-         item.properties.album?.title || 
-         '';
-};
-
-const getItemDescription = (item: MosaicItem) => {
-  return item.properties.selected_image?.caption || 
-         item.properties.selected_image?.title || 
-         '';
-};
-
-const isVideoItem = (item: MosaicItem) => {
-  if (!item.properties.selected_image) return false;
-  
-  const selectedImage = item.properties.selected_image;
-  
-  // Check properties JSON for video type
-  if (selectedImage.properties) {
-    try {
-      const imageProperties = JSON.parse(selectedImage.properties);
-      if (imageProperties.type === 'video') return true;
-    } catch (e) {
-      // Ignore parsing errors
-    }
-  }
-  
-  // Check URL patterns
-  const path = selectedImage.path.toLowerCase();
-  return path.includes('youtube.com') || 
-         path.includes('youtu.be') || 
-         path.includes('vimeo.com');
-};
-
-const isClickable = (item: MosaicItem) => {
-  return !!item.properties.link || (item.type === 'album' && item.properties.album);
-};
-
-const navigateToAlbum = (item: MosaicItem) => {
-  // Handle custom link property first
-  if (item.properties.link) {
-    const link = item.properties.link;
-    
-    // If it's just one word, treat as album title
-    if (!/\s/.test(link) && !link.includes('/') && !link.includes('.')) {
-      router.push(`/albums/${link}`);
-      return;
-    }
-    
-    // If starts with '/', treat as relative URL
-    if (link.startsWith('/')) {
-      router.push(link);
-      return;
-    }
-    
-    // Otherwise treat as external URL
-    window.open(link, '_blank');
-    return;
-  }
-  
-  // Fallback to original album navigation
-  if (item.type === 'album' && item.properties.album) {
-    router.push(`/albums/${item.properties.album.title}`);
-  }
-};
+// All functionality now handled by useMosaic composable
 </script>
 
 <style scoped>
@@ -257,7 +98,8 @@ const navigateToAlbum = (item: MosaicItem) => {
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  min-height: 85vh; /* Increased minimum height for desktop viewing */
+  height: 90vh; /* Fixed height for consistent layout */
+  align-items: stretch;
 }
 
 .mosaic-2-cols {
@@ -276,7 +118,8 @@ const navigateToAlbum = (item: MosaicItem) => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  min-height: 80vh; /* Ensure columns have adequate height */
+  height: 85vh; /* Fixed height for all columns */
+  overflow: hidden;
 }
 
 .mosaic-item {
@@ -284,7 +127,8 @@ const navigateToAlbum = (item: MosaicItem) => {
   overflow: hidden;
   border-radius: 0.5rem;
   cursor: pointer;
-  min-height: 200px; /* Minimum height to prevent tiny images */
+  flex: 1; /* Allow items to grow and fill available space */
+  min-height: 150px; /* Minimum height to prevent tiny images */
 }
 
 .mosaic-item.clickable {
@@ -335,17 +179,19 @@ const navigateToAlbum = (item: MosaicItem) => {
 @media (max-width: 1024px) {
   .dynamic-mosaic {
     grid-template-columns: 1fr !important;
-    min-height: auto; /* Remove min-height on mobile */
+    height: auto; /* Allow natural height on mobile */
   }
 
   .mosaic-column {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    min-height: auto; /* Remove min-height on mobile */
+    height: auto; /* Allow natural height on mobile */
+    gap: 1rem;
   }
 
   .mosaic-item {
-    min-height: 150px; /* Smaller min-height on mobile */
+    min-height: 200px; /* Fixed height on mobile for grid layout */
+    flex: none; /* Remove flex behavior on mobile */
   }
 }
 
@@ -355,7 +201,7 @@ const navigateToAlbum = (item: MosaicItem) => {
   }
   
   .mosaic-item {
-    min-height: 120px; /* Even smaller on very small screens */
+    min-height: 180px; /* Slightly smaller on very small screens */
   }
 }
 </style> 
