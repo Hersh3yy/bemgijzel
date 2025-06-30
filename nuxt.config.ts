@@ -6,6 +6,10 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
   runtimeConfig: {
+    // Private (server-side only)
+    sendGridApiKey: process.env.SENDGRID_API_KEY,
+    sendGridTemplateId: process.env.SENDGRID_TEMPLATE_ID,
+    
     public: {
       vamsUrl: process.env.VAMS_URL,
       vamsBgApiKey: process.env.VAMS_BG_API_KEY,

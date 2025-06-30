@@ -69,41 +69,10 @@
         </template>
       </UCard>
 
-      <!-- Video Player Modal -->
-      <UModal v-model="showVideoPlayer" class="sm:max-w-4xl">
-        <UCard v-if="selectedVideo">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold">{{ selectedVideo.title }}</h3>
-              <UButton 
-                color="neutral" 
-                variant="ghost" 
-                icon="i-heroicons-x-mark-20-solid" 
-                @click="closeVideoPlayer"
-              />
-            </div>
-          </template>
-
-          <div class="aspect-video">
-            <iframe
-              :src="getYouTubeEmbedUrl(selectedVideo)"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              class="w-full h-full rounded-lg"
-            ></iframe>
-          </div>
-
-          <template #footer v-if="selectedVideo.caption">
-            <p class="text-sm text-gray-600">{{ selectedVideo.caption }}</p>
-          </template>
-        </UCard>
-      </UModal>
-
-      <!-- Fullscreen viewer for images -->
+      <!-- Unified viewer for both images and videos -->
       <ImageViewer 
         v-if="showFullscreen && selectedImage" 
-        :images="images.filter(img => !isVideoItem(img))" 
+        :images="images" 
         :initialImage="selectedImage"
         @close="closeFullscreen"
       />
@@ -146,8 +115,6 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const showFullscreen = ref(false);
 const selectedImage = ref<Image | null>(null);
-const showVideoPlayer = ref(false);
-const selectedVideo = ref<Image | null>(null);
 
 const fetchAlbum = async () => {
   loading.value = true;
@@ -239,13 +206,8 @@ const handleItemClick = (image: Image) => {
   console.log('Item clicked:', image.title, image.path);
   console.log('Is video item:', isVideoItem(image));
   
-  if (isVideoItem(image)) {
-    console.log('Opening video player for:', image.title);
-    openVideoPlayer(image);
-  } else {
-    console.log('Opening fullscreen for:', image.title);
-    openFullscreen(image);
-  }
+  // Now all items open in the unified ImageViewer
+  openFullscreen(image);
 };
 
 const openFullscreen = (image: Image) => {
@@ -256,19 +218,6 @@ const openFullscreen = (image: Image) => {
 const closeFullscreen = () => {
   showFullscreen.value = false;
   selectedImage.value = null;
-};
-
-const openVideoPlayer = (video: Image) => {
-  console.log('openVideoPlayer called with:', video.title);
-  console.log('Video properties:', video.properties);
-  selectedVideo.value = video;
-  showVideoPlayer.value = true;
-  console.log('showVideoPlayer set to:', showVideoPlayer.value);
-};
-
-const closeVideoPlayer = () => {
-  showVideoPlayer.value = false;
-  selectedVideo.value = null;
 };
 
 const isVideoItem = (image: Image) => {
@@ -323,50 +272,7 @@ const getVideoThumbnail = (image: Image) => {
   return `https://picsum.photos/800/600?random=${image.id.slice(-3)}`;
 };
 
-const getYouTubeEmbedUrl = (video: Image) => {
-  try {
-    // First try to get video_id from properties
-    if (video.properties) {
-      let properties;
-      if (typeof video.properties === 'string') {
-        properties = JSON.parse(video.properties);
-      } else {
-        properties = video.properties;
-      }
-      
-      if (properties.video_id) {
-        return `https://www.youtube.com/embed/${properties.video_id}`;
-      }
-    }
-    
-    // Try to get URL from properties.video_url if available
-    let url = video.path;
-    if (video.properties) {
-      try {
-        const properties = typeof video.properties === 'string' ? JSON.parse(video.properties) : video.properties;
-        if (properties.video_url) {
-          url = properties.video_url;
-        }
-      } catch (e) {
-        // Use path as fallback
-      }
-    }
-    
-    let videoId = '';
-    
-    // Handle different YouTube URL formats
-    if (url.includes('youtube.com/watch?v=')) {
-      videoId = url.split('youtube.com/watch?v=')[1]?.split('&')[0] || '';
-    } else if (url.includes('youtu.be/')) {
-      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
-    }
-    
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
-  } catch (error) {
-    console.error('Error parsing video URL:', error);
-    return '';
-  }
-};
+
 
 onMounted(() => {
   fetchAlbum();

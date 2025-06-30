@@ -193,4 +193,8 @@ useHead({
   min-height: 100vh;
   padding: 1rem;
 }
+
+.site-container {
+  min-height: 90vh; /* Ensure adequate height for mosaic */
+}
 </style>

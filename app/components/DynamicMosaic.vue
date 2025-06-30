@@ -11,6 +11,7 @@
         :key="item.id"
         class="mosaic-item"
         :class="{ 'clickable': isClickable(item), 'video-item': isVideoItem(item) }"
+        :style="{ height: getTileHeight(columnIndex - 1) }"
         @click="isClickable(item) ? navigateToAlbum(item) : null"
       >
         <img 
@@ -27,7 +28,7 @@
         <!-- Text overlay -->
         <div class="overlay" v-if="getItemTitle(item) || getItemDescription(item)">
           <h3 v-if="getItemTitle(item)" class="text-xl font-bold text-white">{{ getItemTitle(item) }}</h3>
-          <p v-if="getItemDescription(item)" class="text-white">{{ getItemDescription(item) }}</p>
+          <!-- <p v-if="getItemDescription(item)" class="text-white">{{ getItemDescription(item) }}</p> -->
         </div>
       </div>
     </div>
@@ -80,6 +81,48 @@ const router = useRouter();
 
 const numberOfColumns = computed(() => props.mosaicData.mosaic.columns || 3);
 
+const getItemsForColumn = (columnIndex: number) => {
+  return props.mosaicData.items
+    .filter(item => item.column_index === columnIndex && item.is_active)
+    .sort((a, b) => a.order - b.order);
+};
+
+// Calculate items count per column
+const itemsPerColumn = computed(() => {
+  const counts: number[] = [];
+  for (let i = 0; i < numberOfColumns.value; i++) {
+    const items = getItemsForColumn(i);
+    counts.push(items.length);
+  }
+  return counts;
+});
+
+// Find the maximum number of items in any column
+const maxItemsInColumn = computed(() => {
+  return Math.max(...itemsPerColumn.value);
+});
+
+// Calculate tile height for equal column heights
+const getTileHeight = (columnIndex: number) => {
+  const itemsInThisColumn = itemsPerColumn.value[columnIndex] || 0;
+  if (itemsInThisColumn === 0) return '25vh';
+  
+  // Calculate height per tile to make all columns equal height
+  // Base calculation: if max column has 4 items, and this column has 2 items,
+  // then each tile should be twice as tall to fill the same space
+  const maxItems = maxItemsInColumn.value;
+  const tileHeightMultiplier = maxItems / itemsInThisColumn;
+  
+  // Base tile height (increased for better desktop viewing)
+  const baseTileHeight = 20; // Increased from 15vh
+  const calculatedHeight = baseTileHeight * tileHeightMultiplier;
+  
+  // Set minimum height to prevent overly short images
+  const minHeight = 25; // Minimum 25vh per tile
+  
+  return `${Math.max(calculatedHeight, minHeight)}vh`;
+};
+
 const mosaicClasses = computed(() => ({
   'mosaic-2-cols': numberOfColumns.value === 2,
   'mosaic-3-cols': numberOfColumns.value === 3,
@@ -96,12 +139,6 @@ const getColumnClass = (columnIndex: number) => {
   }
   
   return 'column-regular';
-};
-
-const getItemsForColumn = (columnIndex: number) => {
-  return props.mosaicData.items
-    .filter(item => item.column_index === columnIndex && item.is_active)
-    .sort((a, b) => a.order - b.order);
 };
 
 const getImageUrl = (item: MosaicItem) => {
@@ -220,7 +257,7 @@ const navigateToAlbum = (item: MosaicItem) => {
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  min-height: 100vh;
+  min-height: 85vh; /* Increased minimum height for desktop viewing */
 }
 
 .mosaic-2-cols {
@@ -239,6 +276,7 @@ const navigateToAlbum = (item: MosaicItem) => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-height: 80vh; /* Ensure columns have adequate height */
 }
 
 .mosaic-item {
@@ -246,7 +284,7 @@ const navigateToAlbum = (item: MosaicItem) => {
   overflow: hidden;
   border-radius: 0.5rem;
   cursor: pointer;
-  aspect-ratio: 1;
+  min-height: 200px; /* Minimum height to prevent tiny images */
 }
 
 .mosaic-item.clickable {
@@ -297,17 +335,27 @@ const navigateToAlbum = (item: MosaicItem) => {
 @media (max-width: 1024px) {
   .dynamic-mosaic {
     grid-template-columns: 1fr !important;
+    min-height: auto; /* Remove min-height on mobile */
   }
 
   .mosaic-column {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    min-height: auto; /* Remove min-height on mobile */
+  }
+
+  .mosaic-item {
+    min-height: 150px; /* Smaller min-height on mobile */
   }
 }
 
 @media (max-width: 480px) {
   .mosaic-column {
     grid-template-columns: 1fr !important;
+  }
+  
+  .mosaic-item {
+    min-height: 120px; /* Even smaller on very small screens */
   }
 }
 </style> 

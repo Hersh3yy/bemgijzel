@@ -104,11 +104,11 @@ const navigateToPage = (image: MosaicImage) => {
   } else {
     // Map titles to routes
     const routeMap: Record<string, string> = {
-      'Acting Fiction': '/fiction-actings',
-      'Art': '/arts',
-      'Acting Corporate': '/commercial-actings',
-      'Fashion': '/fashion-modelings',
-      'Modeling Corporate': '/corporate-modelings'
+      'Acting Fiction': '/FictionActings',
+      'Art': '/Art',
+      'Acting Corporate': '/CommercialActings',
+      'Fashion': '/FashionModelings',
+      'Modeling Corporate': '/CorporateModelings'
     };
     
     const route = routeMap[image.title];

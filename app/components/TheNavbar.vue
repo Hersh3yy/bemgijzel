@@ -3,7 +3,7 @@
     <!-- Brand and Social Icons -->
     <div class="flex items-center space-x-4">
       <NuxtLink to="/">
-        <img src="/icons/BG_LOGO.png" alt="Site Logo" class="navbar-logo" />
+        <img src="/icons/BG_LOGO.png" alt="Site Logo" class="navbar-logo cursor-pointer hover:opacity-80 transition-opacity" />
       </NuxtLink>
       <a href="https://www.youtube.com/@benjamingijzel" target="_blank" aria-label="YouTube">
         <UIcon name="i-mdi-youtube" class="navbar-social-icon" />
@@ -23,7 +23,7 @@
     </div>
 
     <!-- Navigation Links -->
-    <div class="flex items-center space-x-2">
+    <div class="flex items-center space-x-3">
       <UDropdownMenu :items="actingDropdownItems" :ui="{ content: 'w-48' }">
         <UButton 
           label="Acting" 
@@ -44,8 +44,16 @@
         />
       </UDropdownMenu>
 
-      <NuxtLink to="/albums/arts">
+      <NuxtLink to="/albums/Art">
         <UButton label="Art" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
+      </NuxtLink>
+
+      <NuxtLink to="/whoami">
+        <UButton label="I Am..." color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
+      </NuxtLink>
+
+      <NuxtLink to="/contact">
+        <UButton label="Contact" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
       </NuxtLink>
     </div>
   </nav>
@@ -70,36 +78,105 @@ const modelingDropdownItems = [
 
 <style scoped>
 .navbar-container {
-  background-color: var(--navbar-bg-color);
+  background-color: var(--color-site-black);
   height: var(--navbar-height, 6rem);
+  border-bottom: 1px solid var(--color-site-gold-700);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .navbar-logo {
   max-height: 70px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 2px 4px rgba(196, 147, 38, 0.1));
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05) rotate(1deg);
+  filter: drop-shadow(0 4px 8px rgba(196, 147, 38, 0.2));
 }
 
 .navbar-social-icon {
-  font-size: 2rem;
-  color: var(--navbar-item-color);
-  transition: color 0.3s ease;
+  width: 40px;
+  height: 40px;
+  color: var(--color-site-gold-500);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
 }
 
 .navbar-social-icon:hover {
-  color: var(--navbar-item-hover-bg-color);
+  color: var(--color-site-gold-100);
+  transform: translateY(-2px) scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(196, 147, 38, 0.3));
+}
+
+.navbar-social-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: radial-gradient(circle, rgba(196, 147, 38, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.navbar-social-icon:hover::before {
+  opacity: 1;
 }
 
 .navbar-link {
-  color: var(--navbar-item-color) !important;
+  color: var(--color-site-gold-500) !important;
   background-color: transparent !important;
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.5rem !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.navbar-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(196, 147, 38, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.navbar-link:hover::before {
+  left: 100%;
 }
 
 .navbar-link-hover:hover {
-  background-color: var(--navbar-item-hover-bg-color) !important;
-  color: var(--navbar-item-hover-color) !important;
+  background-color: var(--color-site-gold-500) !important;
+  color: var(--color-site-black) !important;
+  border-color: var(--color-site-gold-500) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(196, 147, 38, 0.3) !important;
 }
 
+.navbar-link:focus {
+  background-color: var(--color-site-gold-500) !important;
+  color: var(--color-site-black) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(196, 147, 38, 0.3) !important;
+}
+
+.navbar-link:active {
+  transform: translateY(0px) !important;
+  transition: transform 0.1s ease !important;
+}
+
+/* Deep selectors for dropdown styling */
 :deep(.text-navbar) {
-  color: var(--navbar-item-color);
+  color: var(--color-site-gold-500);
 }
 
 :deep(.hover\:text-site-gold-300:hover) {
@@ -108,5 +185,46 @@ const modelingDropdownItems = [
 
 :deep(.text-site-gold-300) {
   color: var(--color-site-gold-300) !important;
+}
+
+/* Dropdown menu styling - when open */
+:deep([data-headlessui-state="open"]) .navbar-link {
+  background-color: var(--color-site-gold-500) !important;
+  color: var(--color-site-black) !important;
+  border-color: var(--color-site-gold-500) !important;
+}
+
+/* Style the dropdown content */
+:deep(.fixed) {
+  background-color: var(--color-site-black) !important;
+  border: 1px solid var(--color-site-gold-700) !important;
+  border-radius: 0.5rem !important;
+}
+
+/* Style dropdown items */
+:deep(.fixed a) {
+  color: var(--color-site-gold-500) !important;
+  padding: 0.75rem 1rem !important;
+  transition: all 0.3s ease !important;
+}
+
+:deep(.fixed a:hover) {
+  background-color: var(--color-site-gold-500) !important;
+  color: var(--color-site-black) !important;
+}
+
+/* Dropdown arrow styling */
+:deep(.navbar-link svg) {
+  color: inherit !important;
+}
+
+/* Override any Nuxt UI defaults for dropdowns */
+:deep([role="menuitem"]) {
+  color: var(--color-site-gold-500) !important;
+}
+
+:deep([role="menuitem"]:hover) {
+  background-color: var(--color-site-gold-500) !important;
+  color: var(--color-site-black) !important;
 }
 </style> 
