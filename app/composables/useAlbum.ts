@@ -91,31 +91,67 @@ export const useAlbum = () => {
     }
     
     const path = image.path.toLowerCase();
-    return path.includes('youtube.com') || 
+    const isVideoByPath = path.includes('youtube.com') || 
            path.includes('youtu.be') || 
            path.includes('vimeo.com');
+           
+    return isVideoByPath;
   };
 
   const getVideoThumbnail = (image: AlbumImage): string => {
-    // Debug logging
-    console.log('Getting video thumbnail for:', image.id, image.title);
-    console.log('image.thumbnail_url:', image.thumbnail_url);
-    console.log('image.properties:', image.properties);
-    
+    // First priority: properties.thumbnail_url (parsed object)
     if (typeof image.properties === 'object' && image.properties?.thumbnail_url) {
-      console.log('Using properties.thumbnail_url:', image.properties.thumbnail_url);
       return image.properties.thumbnail_url;
     }
     
+    // Second priority: direct thumbnail_url field
     if (image.thumbnail_url) {
-      console.log('Using image.thumbnail_url:', image.thumbnail_url);
       return image.thumbnail_url;
     }
     
-    // Fallback thumbnail for videos
-    const fallback = `https://picsum.photos/800/600?random=${image.id.slice(-3)}`;
-    console.log('Using fallback:', fallback);
-    return fallback;
+    // Third priority: try to parse properties if it's a string
+    if (typeof image.properties === 'string') {
+      try {
+        const parsed = JSON.parse(image.properties);
+        if (parsed?.thumbnail_url) {
+          return parsed.thumbnail_url;
+        }
+      } catch (e) {
+        console.warn('Failed to parse properties JSON for image:', image.id, e);
+      }
+    }
+    
+    // Fourth priority: try to generate YouTube thumbnail from video ID or URL
+    let videoId = '';
+    let url = image.path;
+    
+    // Try to get video ID from properties first
+    if (typeof image.properties === 'object' && image.properties?.video_id) {
+      videoId = image.properties.video_id;
+    } 
+    // Try to get video URL from properties
+    else if (typeof image.properties === 'object' && image.properties?.video_url) {
+      url = image.properties.video_url;
+    }
+    
+    // Extract video ID from URL if we don't have it
+    if (!videoId && url) {
+      if (url.includes('youtube.com/watch?v=')) {
+        videoId = url.split('youtube.com/watch?v=')[1]?.split('&')[0] || '';
+      } else if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+      }
+    }
+    
+    // Generate YouTube thumbnail if we have video ID
+    if (videoId) {
+      const youtubeThumb = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      return youtubeThumb;
+    }
+    
+    // Fallback thumbnail for videos - try a more reliable placeholder
+    console.warn('No thumbnail found for video, using fallback:', image.title);
+    return `https://via.placeholder.com/800x600/333333/ffffff?text=Video+Thumbnail+Not+Available`;
   };
 
   const getYouTubeEmbedUrl = (image: AlbumImage): string => {

@@ -6,31 +6,12 @@
       class="mosaic-column"
       :class="getColumnClass(columnIndex - 1)"
     >
-      <div 
+      <MosaicItem 
         v-for="item in getItemsForColumnIndex(columnIndex - 1)" 
         :key="item.id"
-        class="mosaic-item"
-        :class="{ 'clickable': isClickable(item), 'video-item': isVideoItem(item) }"
-        :style="{ height: getTileHeight(columnIndex - 1) }"
-        @click="isClickable(item) ? navigateToItem(item) : null"
-      >
-        <img 
-          :src="getImageUrl(item)"
-          :alt="getImageAlt(item)"
-          class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-        />
-        
-        <!-- Video play icon overlay -->
-        <div v-if="isVideoItem(item)" class="video-overlay">
-          <UIcon name="i-heroicons-play" class="text-6xl text-white opacity-80" />
-        </div>
-        
-        <!-- Text overlay -->
-        <div class="overlay" v-if="getItemTitle(item) || getItemDescription(item)">
-          <h3 v-if="getItemTitle(item)" class="text-xl font-bold text-white">{{ getItemTitle(item) }}</h3>
-          <!-- <p v-if="getItemDescription(item)" class="text-white">{{ getItemDescription(item) }}</p> -->
-        </div>
-      </div>
+        :item="item"
+        :height="getTileHeight(columnIndex - 1)"
+      />
     </div>
   </div>
 </template>
@@ -44,12 +25,6 @@ const props = defineProps<{
 }>();
 
 const {
-  getImageUrl,
-  getImageAlt,
-  getItemTitle,
-  isVideoItem,
-  isClickable,
-  navigateToItem,
   getItemsForColumn,
   calculateColumnHeights,
   calculateTileHeight
@@ -89,8 +64,6 @@ const getColumnClass = (columnIndex: number) => {
   
   return 'column-regular';
 };
-
-// All functionality now handled by useMosaic composable
 </script>
 
 <style scoped>
@@ -122,59 +95,6 @@ const getColumnClass = (columnIndex: number) => {
   overflow: hidden;
 }
 
-.mosaic-item {
-  position: relative;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  flex: 1; /* Allow items to grow and fill available space */
-  min-height: 150px; /* Minimum height to prevent tiny images */
-}
-
-.mosaic-item.clickable {
-  cursor: pointer;
-}
-
-.mosaic-item:not(.clickable) {
-  cursor: default;
-}
-
-.video-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.3);
-  transition: background 0.3s ease;
-}
-
-.mosaic-item:hover .video-overlay {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  padding: 1rem;
-  text-align: center;
-}
-
-.mosaic-item:hover .overlay {
-  opacity: 1;
-}
-
-.video-item .overlay {
-  background: rgba(0, 0, 0, 0.7);
-}
-
 /* Mobile responsive - single column */
 @media (max-width: 1024px) {
   .dynamic-mosaic {
@@ -188,20 +108,11 @@ const getColumnClass = (columnIndex: number) => {
     height: auto; /* Allow natural height on mobile */
     gap: 1rem;
   }
-
-  .mosaic-item {
-    min-height: 200px; /* Fixed height on mobile for grid layout */
-    flex: none; /* Remove flex behavior on mobile */
-  }
 }
 
 @media (max-width: 480px) {
   .mosaic-column {
     grid-template-columns: 1fr !important;
-  }
-  
-  .mosaic-item {
-    min-height: 180px; /* Slightly smaller on very small screens */
   }
 }
 </style> 

@@ -41,10 +41,10 @@
                   <img 
                     :src="getVideoThumbnail(video)" 
                     :alt="video.caption || 'Showreel thumbnail'" 
-                    class="w-full h-full object-cover transition-all duration-300"
+                    class="image-responsive"
                   />
-                  <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 hover:bg-opacity-40 transition-all duration-300">
-                    <UIcon name="i-heroicons-play" class="text-6xl text-white drop-shadow-lg" />
+                  <div class="video-overlay-interactive">
+                    <UIcon name="i-heroicons-play" class="play-icon-medium" />
                   </div>
                 </div>
               </template>
@@ -55,10 +55,10 @@
                   <img 
                     :src="video.thumbnail_url || video.path" 
                     :alt="video.caption || 'Showreel thumbnail'" 
-                    class="w-full h-full object-cover transition-all duration-300"
+                    class="image-responsive image-hover-darken"
                   />
-                  <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
-                    <UIcon name="i-heroicons-play" class="text-6xl text-white opacity-80" />
+                  <div class="video-overlay-static">
+                    <UIcon name="i-heroicons-play" class="play-icon-subtle" />
                   </div>
                 </div>
               </template>
@@ -83,10 +83,10 @@
       </UCard>
 
       <!-- Unified viewer for both images and videos -->
-      <ImageViewer 
+      <ItemViewer 
         v-if="showFullscreen && selectedImage" 
-        :images="mutableImages" 
-        :initialImage="selectedImage"
+        :items="mutableImages" 
+        :initialItem="selectedImage"
         @close="closeFullscreen"
       />
     </div>
@@ -123,7 +123,7 @@ const getEmbedUrl = (video: any) => {
   return getYouTubeEmbedUrl(video);
 };
 
-// Create a mutable copy for the ImageViewer component
+// Create a mutable copy for the ItemViewer component
 const mutableImages = computed(() => [...videos.value]);
 
 const handleItemClick = (video: AlbumImage) => {

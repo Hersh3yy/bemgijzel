@@ -39,10 +39,12 @@
                     <img 
                       :src="getVideoThumbnail(image)" 
                       :alt="image.caption || 'Video thumbnail'" 
-                      class="w-full h-full object-cover transition-all duration-300"
+                      class="image-responsive"
+                      @error="handleImageError($event, image)"
+                      @load="handleImageLoad($event, image)"
                     />
-                    <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 hover:bg-opacity-40 transition-all duration-300">
-                      <UIcon name="i-heroicons-play" class="text-4xl text-white drop-shadow-lg" />
+                    <div class="video-overlay-interactive">
+                      <UIcon name="i-heroicons-play" class="play-icon-small" />
                     </div>
                   </div>
                 </template>
@@ -52,7 +54,9 @@
                   <img 
                     :src="image.thumbnail_url || image.path" 
                     :alt="image.caption || 'Album image'" 
-                    class="w-full aspect-[4/3] object-cover transition-all duration-300"
+                    class="w-full aspect-[4/3] object-cover image-hover-darken"
+                    @error="handleImageError($event, image)"
+                    @load="handleImageLoad($event, image)"
                   />
                 </template>
                 
@@ -75,10 +79,10 @@
       </UCard>
 
       <!-- Unified viewer for both images and videos -->
-      <ImageViewer 
+      <ItemViewer 
         v-if="showFullscreen && selectedImage" 
-        :images="mutableImages" 
-        :initialImage="selectedImage"
+        :items="mutableImages" 
+        :initialItem="selectedImage"
         @close="closeFullscreen"
       />
     </div>
@@ -88,6 +92,7 @@
 <script setup lang="ts">
 import type { AlbumData } from '~/composables/useAlbum';
 import { useAlbum } from '~/composables/useAlbum';
+import { logger } from '~/utils/logger';
 
 const route = useRoute();
 const { fetchAlbumByTitle, isVideoItem, getVideoThumbnail } = useAlbum();
@@ -115,14 +120,14 @@ const album = computed(() => albumData.value?.album || null);
 const images = computed(() => albumData.value?.images || []);
 const errorMessage = computed(() => error.value?.message || 'Album not found');
 
-// Create a mutable copy for the ImageViewer component
+// Create a mutable copy for the ItemViewer component
 const mutableImages = computed(() => [...(albumData.value?.images || [])]);
 
 const handleItemClick = (image: AlbumImage) => {
   logger.debug('Item clicked:', image.title, image.path);
   logger.debug('Is video item:', isVideoItem(image));
   
-  // Now all items open in the unified ImageViewer
+  // Now all items open in the unified ItemViewer
   openFullscreen(image);
 };
 
@@ -134,6 +139,97 @@ const openFullscreen = (image: AlbumImage) => {
 const closeFullscreen = () => {
   showFullscreen.value = false;
   selectedImage.value = null;
+};
+
+const handleImageError = (event: Event, image: AlbumImage) => {
+  const target = event.target as HTMLImageElement;
+  logger.error('Error loading image:', {
+    title: image.title,
+    path: image.path,
+    thumbnail_url: image.thumbnail_url,
+    properties: image.properties,
+    src: target.src,
+    isVideo: isVideoItem(image)
+  });
+  
+  // For video items, try multiple fallback strategies
+  if (isVideoItem(image)) {
+    // First fallback: try thumbnail_url if we weren't using it already
+    if (target.src !== image.thumbnail_url && image.thumbnail_url) {
+      logger.info('Trying thumbnail_url fallback for video:', image.thumbnail_url);
+      target.src = image.thumbnail_url;
+      return;
+    }
+    
+    // Second fallback: try properties.thumbnail_url if different
+    if (typeof image.properties === 'object' && 
+        image.properties?.thumbnail_url && 
+        target.src !== image.properties.thumbnail_url) {
+      logger.info('Trying properties.thumbnail_url fallback for video:', image.properties.thumbnail_url);
+      target.src = image.properties.thumbnail_url;
+      return;
+    }
+    
+    // Third fallback: try YouTube default thumbnail if we can extract video ID
+    let videoId = '';
+    let url = image.path;
+    
+    if (typeof image.properties === 'object' && image.properties?.video_id) {
+      videoId = image.properties.video_id;
+    } else if (typeof image.properties === 'object' && image.properties?.video_url) {
+      url = image.properties.video_url;
+    }
+    
+    if (!videoId && url) {
+      if (url.includes('youtube.com/watch?v=')) {
+        videoId = url.split('youtube.com/watch?v=')[1]?.split('&')[0] || '';
+      } else if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+      }
+    }
+    
+    if (videoId) {
+      const youtubeFallback = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      if (target.src !== youtubeFallback) {
+        logger.info('Trying YouTube API fallback for video:', youtubeFallback);
+        target.src = youtubeFallback;
+        return;
+      }
+      
+      // Try medium quality if maxres fails
+      const youtubeMedium = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      if (target.src !== youtubeMedium) {
+        logger.info('Trying YouTube medium quality fallback for video:', youtubeMedium);
+        target.src = youtubeMedium;
+        return;
+      }
+    }
+    
+    // Final fallback: placeholder image
+    const placeholder = `https://via.placeholder.com/800x600/333333/ffffff?text=Video+Thumbnail+Unavailable`;
+    if (target.src !== placeholder) {
+      logger.info('Using placeholder fallback for video:', placeholder);
+      target.src = placeholder;
+    }
+  } else {
+    // For regular images, try webp_url or thumbnail_url fallbacks
+    if (image.webp_url && target.src !== image.webp_url) {
+      logger.info('Trying webp_url fallback for image:', image.webp_url);
+      target.src = image.webp_url;
+    } else if (image.thumbnail_url && target.src !== image.thumbnail_url) {
+      logger.info('Trying thumbnail_url fallback for image:', image.thumbnail_url);
+      target.src = image.thumbnail_url;
+    }
+  }
+};
+
+const handleImageLoad = (event: Event, image: AlbumImage) => {
+  const target = event.target as HTMLImageElement;
+  logger.debug('Image loaded successfully:', {
+    title: image.title,
+    src: target.src,
+    isVideo: isVideoItem(image)
+  });
 };
 
 // Enhanced meta tags for SEO

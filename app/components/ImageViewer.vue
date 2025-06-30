@@ -1,49 +1,27 @@
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" @click="close">
+  <div class="modal-backdrop" @click="close">
     <div class="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center" @click.stop>
       <!-- Close button -->
-      <button 
-        class="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-        @click="close"
-      >
+      <button class="nav-button-close" @click="close">
         <UIcon name="i-heroicons-x-mark" class="w-8 h-8" />
       </button>
 
       <!-- Navigation buttons -->
-      <button 
-        v-if="currentIndex > 0"
-        class="absolute left-4 text-white hover:text-gray-300 z-10"
-        @click.stop="previous"
-      >
+      <button v-if="currentIndex > 0" class="nav-button-prev" @click.stop="previous">
         <UIcon name="i-heroicons-chevron-left" class="w-8 h-8" />
       </button>
 
-      <button 
-        v-if="currentIndex < images.length - 1"
-        class="absolute right-4 text-white hover:text-gray-300 z-10"
-        @click.stop="next"
-      >
+      <button v-if="currentIndex < images.length - 1" class="nav-button-next" @click.stop="next">
         <UIcon name="i-heroicons-chevron-right" class="w-8 h-8" />
       </button>
 
       <!-- Content Area -->
       <div class="w-full h-full flex flex-col items-center justify-center">
-        <!-- Video Player -->
-        <div v-if="currentImage && isVideoItem(currentImage)" class="w-full max-w-4xl aspect-video">
-          <iframe
-            :src="getYouTubeEmbedUrl(currentImage)"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-            class="w-full h-full rounded-lg"
-          ></iframe>
-        </div>
-
-        <!-- Image -->
+        <!-- Image Display -->
         <img 
-          v-else
-          :src="currentImage?.path || currentImage?.thumbnail_url || ''" 
-          :alt="currentImage?.caption || 'Full size image'"
+          v-if="currentImage"
+          :src="currentImage.path || currentImage.thumbnail_url || ''" 
+          :alt="currentImage.caption || 'Full size image'"
           class="max-w-full max-h-[80vh] object-contain"
         />
 
@@ -69,7 +47,6 @@
 
 <script setup lang="ts">
 import type { AlbumImage } from '~/composables/useAlbum';
-import { useAlbum } from '~/composables/useAlbum';
 
 const props = defineProps<{
   images: AlbumImage[];
@@ -108,8 +85,6 @@ const previous = () => {
 const close = () => {
   emit('close');
 };
-
-const { isVideoItem, getYouTubeEmbedUrl } = useAlbum();
 
 // Keyboard navigation
 onMounted(() => {

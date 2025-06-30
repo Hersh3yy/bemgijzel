@@ -41,10 +41,10 @@
                   <img 
                     :src="getVideoThumbnail(image)" 
                     :alt="image.caption || 'Video thumbnail'" 
-                    class="w-full h-full object-cover transition-all duration-300"
+                    class="image-responsive"
                   />
-                  <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 hover:bg-opacity-40 transition-all duration-300">
-                    <UIcon name="i-heroicons-play" class="text-6xl text-white drop-shadow-lg" />
+                  <div class="video-overlay-interactive">
+                    <UIcon name="i-heroicons-play" class="play-icon-medium" />
                   </div>
                 </div>
               </template>
@@ -54,7 +54,7 @@
                 <img 
                   :src="image.thumbnail_url || image.path" 
                   :alt="image.caption || 'Latest content'" 
-                  class="w-full aspect-video object-cover transition-all duration-300"
+                  class="w-full aspect-video object-cover image-hover-darken"
                 />
               </template>
               
@@ -78,10 +78,10 @@
       </UCard>
 
       <!-- Unified viewer for both images and videos -->
-      <ImageViewer 
+      <ItemViewer 
         v-if="showFullscreen && selectedImage" 
-        :images="mutableImages" 
-        :initialImage="selectedImage"
+        :items="mutableImages" 
+        :initialItem="selectedImage"
         @close="closeFullscreen"
       />
     </div>
@@ -121,7 +121,7 @@ const errorMessage = computed(() => error.value?.message || 'Failed to load late
 const album = computed(() => albumData.value?.album || null);
 const images = computed(() => albumData.value?.images || []);
 
-// Create a mutable copy for the ImageViewer component
+// Create a mutable copy for the ItemViewer component
 const mutableImages = computed(() => [...images.value]);
 
 const handleItemClick = (image: AlbumImage) => {
