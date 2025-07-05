@@ -78,7 +78,7 @@ const fallbackMosaicImages: MosaicImage[] = [
     alt: 'Commercial Actings',
     title: 'Commercials',
     description: 'Commercial acting work',
-    route: '/albums/CommercialActings'
+    route: '/albums/Commercials'
   },
   {
     url: 'https://picsum.photos/800/550?random=4',
@@ -110,21 +110,21 @@ const fallbackMosaicImages: MosaicImage[] = [
     alt: 'Commercial Actings',
     title: 'Acting Corporate',
     description: 'Commercial acting work',
-    route: '/albums/CommercialActings'
+    route: '/albums/Commercials'
   },
   {
     url: 'https://picsum.photos/800/650?random=8',
     alt: 'Fashion Modelings',
     title: 'Fashion',
     description: 'Fashion modeling portfolio',
-    route: '/albums/FashionModelings'
+    route: '/albums/Fashion'
   },
   {
     url: 'https://picsum.photos/800/550?random=9',
     alt: 'Corporate Modelings',
     title: 'Modeling Corporate',
     description: 'Corporate modeling work',
-    route: '/albums/CorporateModelings'
+    route: '/albums/Corporate'
   }
 ];
 
