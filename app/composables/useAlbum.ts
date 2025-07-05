@@ -60,7 +60,7 @@ export const useAlbum = () => {
   };
 
   const fetchAlbumById = async (id: string): Promise<AlbumData> => {
-    const response = await fetchApi<AlbumData>(`/albums/${id}`);
+    const response = await fetchApi<AlbumData>(`/public/albums/${id}`);
     
     // Ensure properties are parsed for images
     if (response.images) {
