@@ -92,7 +92,7 @@
 import type { Album, AlbumImage, AlbumData } from '~/composables/useAlbum';
 import { useAlbum } from '~/composables/useAlbum';
 
-const { fetchAlbumByTitle, isVideoItem, getVideoThumbnail } = useAlbum();
+const { fetchAlbumById, isVideoItem, getVideoThumbnail } = useAlbum();
 
 const showFullscreen = ref(false);
 const selectedImage = ref<AlbumImage | null>(null);
@@ -100,7 +100,7 @@ const selectedImage = ref<AlbumImage | null>(null);
 // Use Nuxt's built-in useAsyncData for the "Latest" album
 const { data: albumData, status, error } = await useAsyncData<AlbumData>(
   'latest-album',
-  () => fetchAlbumByTitle('Latest'),
+  () => fetchAlbumById('9f3864ab-b887-4083-9a2b-c7863d801636'),
   {
     server: true,
     // Transform to sort images by newest first
