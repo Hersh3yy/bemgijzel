@@ -130,12 +130,11 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
 .video-overlay-interactive:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: gray;
 }
 
 .video-overlay-hover-only {

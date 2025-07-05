@@ -94,7 +94,7 @@ const fallbackMosaicImages: MosaicImage[] = [
     alt: 'Fiction Actings',
     title: 'Acting Fiction',
     description: 'Fiction acting portfolio',
-    route: '/albums/FictionActings'
+    route: '/albums/ActingFiction'
   },
   {
     url: 'https://picsum.photos/800/800?random=6',

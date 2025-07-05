@@ -62,9 +62,9 @@
 <script setup lang="ts">
 const actingDropdownItems = [
   [
-    { label: 'Fiction: Acting', to: '/albums/FictionActings' },
+    { label: 'Fiction: Acting', to: '/albums/ActingFiction' },
     { label: 'Music Videos', to: '/albums/MusicVideos' },
-    { label: 'Commercials', to: '/albums/CommercialActings' }
+    { label: 'Commercials', to: '/albums/Commercials' }
   ]
 ];
 
