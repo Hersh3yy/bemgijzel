@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Album } from '~/composables/useAlbum';
+import type { Album } from '~/types/api';
 import { useAlbum } from '~/composables/useAlbum';
 
 const { fetchAllAlbums } = useAlbum();

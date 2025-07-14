@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AlbumData, AlbumImage } from '~/composables/useAlbum';
+import type { AlbumData, AlbumImage } from '~/types/api';
 import { useAlbum } from '~/composables/useAlbum';
 
 const { fetchAlbumByTitle, isVideoItem, getVideoThumbnail, getYouTubeEmbedUrl } = useAlbum();

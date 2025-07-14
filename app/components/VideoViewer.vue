@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AlbumImage } from '~/composables/useAlbum';
+import type { AlbumImage } from '~/types/api';
 import { useAlbum } from '~/composables/useAlbum';
 
 const props = defineProps<{

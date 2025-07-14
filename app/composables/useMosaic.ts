@@ -1,44 +1,11 @@
+import type { MosaicItem, MosaicData } from '~/types/api';
+import { useApi } from './useApi';
+import { useMedia } from './useMedia';
 import { logger } from '~/utils/logger';
-
-export interface MosaicItem {
-  id: string;
-  column_index: number;
-  type: string;
-  content: string | null;
-  album_id: string | null;
-  properties: {
-    album: {
-      id: string;
-      title: string;
-      cover_image_path: string;
-    };
-    selected_image?: {
-      id: string;
-      path: string;
-      title: string | null;
-      caption: string | null;
-      properties?: string;
-    };
-    link?: string;
-    edit_text?: string;
-  };
-  order: number;
-  is_active: boolean;
-}
-
-export interface MosaicData {
-  mosaic: {
-    id: string;
-    title: string;
-    description: string;
-    columns: number;
-    display_settings: any;
-  };
-  items: MosaicItem[];
-}
 
 export const useMosaic = () => {
   const { fetchApi } = useApi();
+  const { isMosaicVideoItem, getMosaicImageUrl } = useMedia();
   const router = useRouter();
 
   const fetchMosaicByTitle = async (title: string): Promise<MosaicData> => {
@@ -46,38 +13,7 @@ export const useMosaic = () => {
   };
 
   const getImageUrl = (item: MosaicItem): string => {
-    // First check if we have a selected_image
-    if (item.properties.selected_image) {
-      const selectedImage = item.properties.selected_image;
-      
-      // Parse properties JSON if it exists
-      let imageProperties = null;
-      if (selectedImage.properties) {
-        try {
-          imageProperties = JSON.parse(selectedImage.properties);
-        } catch (e) {
-          // Silently ignore parsing errors
-        }
-      }
-      
-      // For video items, use the thumbnail_url from properties
-      if (imageProperties?.type === 'video' && imageProperties?.thumbnail_url) {
-        return imageProperties.thumbnail_url;
-      }
-      
-      // For video URLs (YouTube, etc.), use thumbnail_url if available
-      const path = selectedImage.path.toLowerCase();
-      if ((path.includes('youtube.com') || path.includes('youtu.be') || path.includes('vimeo.com')) && imageProperties?.thumbnail_url) {
-        return imageProperties.thumbnail_url;
-      }
-      
-      // For regular images, use the path
-      return selectedImage.path;
-    }
-    
-    // Fallback to album cover
-    return item.properties.album?.cover_image_path || 
-           `https://picsum.photos/800/800?random=${item.id.slice(-1)}`;
+    return getMosaicImageUrl(item);
   };
 
   const getImageAlt = (item: MosaicItem): string => {
@@ -96,25 +32,7 @@ export const useMosaic = () => {
   };
 
   const isVideoItem = (item: MosaicItem): boolean => {
-    if (!item.properties.selected_image) return false;
-    
-    const selectedImage = item.properties.selected_image;
-    
-    // Check properties JSON for video type
-    if (selectedImage.properties) {
-      try {
-        const imageProperties = JSON.parse(selectedImage.properties);
-        if (imageProperties.type === 'video') return true;
-      } catch (e) {
-        // Ignore parsing errors
-      }
-    }
-    
-    // Check URL patterns
-    const path = selectedImage.path.toLowerCase();
-    return path.includes('youtube.com') || 
-           path.includes('youtu.be') || 
-           path.includes('vimeo.com');
+    return isMosaicVideoItem(item);
   };
 
   const isClickable = (item: MosaicItem): boolean => {

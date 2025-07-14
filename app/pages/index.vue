@@ -15,42 +15,11 @@
 
 <script setup lang="ts">
 import type { MosaicImage } from '~/components/Mosaic.vue';
-import { useApi } from '~/composables/useApi';
+import type { MosaicData } from '~/types/api';
+import { useMosaic } from '~/composables/useMosaic';
 import { logger } from '~/utils/logger';
 
-interface MosaicItem {
-  id: string;
-  column_index: number;
-  type: string;
-  content: string | null;
-  album_id: string | null;
-  properties: {
-    album: {
-      id: string;
-      title: string;
-      cover_image_path: string;
-    };
-    selected_image: {
-      id: string;
-      path: string;
-      title: string | null;
-      caption: string | null;
-    };
-  };
-  order: number;
-  is_active: boolean;
-}
-
-interface MosaicData {
-  mosaic: {
-    id: string;
-    title: string;
-    description: string;
-    columns: number;
-    display_settings: any;
-  };
-  items: MosaicItem[];
-}
+const { fetchMosaicByTitle } = useMosaic();
 
 const mosaicData = ref<MosaicData | null>(null);
 const loading = ref(true);
@@ -133,12 +102,10 @@ const fetchMosaic = async () => {
   error.value = null;
   
   try {
-    const { fetchApi } = useApi();
-    
     // You can make this configurable later or fetch a specific mosaic by title
     const mosaicTitle = 'LandingPage'; // or get from config/environment
     
-    const response = await fetchApi(`/public/mosaics/by-title/${mosaicTitle}`);
+    const response = await fetchMosaicByTitle(mosaicTitle);
     mosaicData.value = response;
   } catch (err) {
     logger.warn('Using fallback mosaic due to API error:', err);

@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Album, AlbumImage, AlbumData } from '~/composables/useAlbum';
+import type { Album, AlbumImage, AlbumData } from '~/types/api';
 import { useAlbum } from '~/composables/useAlbum';
 
 const { fetchAlbumById, isVideoItem, getVideoThumbnail } = useAlbum();

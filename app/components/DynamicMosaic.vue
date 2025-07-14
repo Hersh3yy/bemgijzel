@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MosaicItem, MosaicData } from '~/composables/useMosaic';
+import type { MosaicItem, MosaicData } from '~/types/api';
 import { useMosaic } from '~/composables/useMosaic';
 
 const props = defineProps<{

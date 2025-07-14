@@ -1,14 +1,5 @@
-interface ApiResponse<T = any> {
-  data?: {
-    data?: T;
-    album?: T;
-    albums?: T;
-    images?: T;
-  } | T;
-  album?: T;
-  albums?: T;
-  images?: T;
-}
+import type { ApiResponse, ApiError, ApiConfig, AlbumData, AlbumImage } from '~/types/api';
+import { useMedia } from './useMedia';
 
 interface UseApiOptions {
   immediate?: boolean;
@@ -17,8 +8,9 @@ interface UseApiOptions {
 
 export const useApi = () => {
   const config = useRuntimeConfig();
+  const { parseProperties } = useMedia();
   
-  const getApiUrl = () => {
+  const getApiUrl = (): string => {
     const apiUrl = config.public.apiUrl || config.public.vamsUrl;
     if (!apiUrl) {
       throw new Error('API URL not configured. Please check your environment variables (VAMS_URL).');
@@ -26,7 +18,7 @@ export const useApi = () => {
     return apiUrl;
   };
 
-  const getHeaders = () => {
+  const getHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -40,42 +32,37 @@ export const useApi = () => {
     return headers;
   };
 
-  const fetchApi = async <T = any>(endpoint: string): Promise<T> => {
-    const baseUrl = getApiUrl();
-    const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-    const headers = getHeaders();
-
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `API Error (${response.status}): `;
-      
-      switch (response.status) {
-        case 404:
-          errorMessage += 'Resource not found';
-          break;
-        case 401:
-          errorMessage += 'Authentication failed. Please check your API key.';
-          break;
-        case 403:
-          errorMessage += 'Access forbidden. You may not have permission to access this resource.';
-          break;
-        case 500:
-        case 502:
-        case 503:
-          errorMessage += 'Server error. Please try again later.';
-          break;
-        default:
-          errorMessage += errorText || response.statusText;
-      }
-      
-      throw new Error(errorMessage);
-    }
-
-    const apiResponse: any = await response.json();
+  const createApiError = (response: Response, errorText: string): ApiError => {
+    let errorMessage = `API Error (${response.status}): `;
     
-    // Handle nested response structures
+    switch (response.status) {
+      case 404:
+        errorMessage += 'Resource not found';
+        break;
+      case 401:
+        errorMessage += 'Authentication failed. Please check your API key.';
+        break;
+      case 403:
+        errorMessage += 'Access forbidden. You may not have permission to access this resource.';
+        break;
+      case 500:
+      case 502:
+      case 503:
+        errorMessage += 'Server error. Please try again later.';
+        break;
+      default:
+        errorMessage += errorText || response.statusText;
+    }
+    
+    return {
+      status: response.status,
+      message: errorMessage,
+      originalError: new Error(errorText)
+    };
+  };
+
+  const transformApiResponse = <T>(apiResponse: any): T => {
+    // Handle nested response structures consistently
     if (apiResponse.data?.data) {
       return apiResponse.data.data as T;
     } else if (apiResponse.data) {
@@ -85,9 +72,64 @@ export const useApi = () => {
     return apiResponse as T;
   };
 
+  const transformAlbumData = (data: AlbumData): AlbumData => {
+    // Ensure properties are parsed for images
+    if (data.images) {
+      data.images = data.images.map((img: AlbumImage) => ({
+        ...img,
+        properties: parseProperties(img.properties)
+      }));
+    }
+    
+    return data;
+  };
+
+  const fetchApi = async <T = any>(endpoint: string, options: RequestInit = {}): Promise<T> => {
+    const baseUrl = getApiUrl();
+    const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    const headers = { ...getHeaders(), ...options.headers };
+
+    try {
+      const response = await fetch(url, { 
+        ...options,
+        headers 
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        const apiError = createApiError(response, errorText);
+        throw new Error(apiError.message);
+      }
+
+      const apiResponse = await response.json();
+      return transformApiResponse<T>(apiResponse);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Unknown API error occurred');
+    }
+  };
+
+  const fetchWithFallback = async <T>(
+    primaryEndpoint: string, 
+    fallbackEndpoint: string
+  ): Promise<T> => {
+    try {
+      return await fetchApi<T>(primaryEndpoint);
+    } catch (error) {
+      console.warn(`Primary endpoint failed (${primaryEndpoint}), trying fallback (${fallbackEndpoint}):`, error);
+      return await fetchApi<T>(fallbackEndpoint);
+    }
+  };
+
   return {
     fetchApi,
+    fetchWithFallback,
     getApiUrl,
-    getHeaders
+    getHeaders,
+    createApiError,
+    transformApiResponse,
+    transformAlbumData
   };
 }; 

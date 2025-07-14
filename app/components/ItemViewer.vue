@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AlbumImage } from '~/composables/useAlbum';
+import type { AlbumImage } from '~/types/api';
 import { useAlbum } from '~/composables/useAlbum';
 import ImageViewer from './ImageViewer.vue';
 import VideoViewer from './VideoViewer.vue';
