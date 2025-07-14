@@ -45,6 +45,12 @@ export const useApi = () => {
       case 403:
         errorMessage += 'Access forbidden. You may not have permission to access this resource.';
         break;
+      case 429:
+        errorMessage += 'Rate limit exceeded. Please try again later.';
+        break;
+      case 422:
+        errorMessage += 'Validation error. Please check your request data.';
+        break;
       case 500:
       case 502:
       case 503:

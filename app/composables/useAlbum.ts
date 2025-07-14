@@ -7,17 +7,17 @@ export const useAlbum = () => {
   const { isVideoItem, getVideoThumbnail, getYouTubeEmbedUrl } = useMedia();
 
   const fetchAlbumByTitle = async (title: string): Promise<AlbumData> => {
-    const response = await fetchApi<AlbumData>(`/public/albums/by-title/${title}`);
+    const response = await fetchApi<AlbumData>(`/albums/by-title/${title}`);
     return transformAlbumData(response);
   };
 
   const fetchAlbumById = async (id: string): Promise<AlbumData> => {
-    const response = await fetchApi<AlbumData>(`/public/albums/${id}`);
+    const response = await fetchApi<AlbumData>(`/albums/${id}`);
     return transformAlbumData(response);
   };
 
   const fetchAllAlbums = async (): Promise<Album[]> => {
-    return await fetchWithFallback<Album[]>('/public/albums', '/albums');
+    return await fetchApi<Album[]>('/albums');
   };
 
   return {

@@ -9,7 +9,7 @@ export const useMosaic = () => {
   const router = useRouter();
 
   const fetchMosaicByTitle = async (title: string): Promise<MosaicData> => {
-    return await fetchApi<MosaicData>(`/public/mosaics/by-title/${title}`);
+    return await fetchApi<MosaicData>(`/mosaics/by-title/${title}`);
   };
 
   const getImageUrl = (item: MosaicItem): string => {
