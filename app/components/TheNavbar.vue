@@ -26,7 +26,7 @@
     <div class="flex items-center space-x-3">
       <UDropdownMenu :items="actingDropdownItems" :ui="{ content: 'w-48' }">
         <UButton 
-          label="Acting" 
+          label="ACTING" 
           color="primary" 
           variant="ghost" 
           class="navbar-link hover:navbar-link-hover"
@@ -36,7 +36,7 @@
 
       <UDropdownMenu :items="modelingDropdownItems" :ui="{ content: 'w-48' }">
         <UButton 
-          label="Modeling" 
+          label="MODELING" 
           color="primary" 
           variant="ghost" 
           class="navbar-link hover:navbar-link-hover"
