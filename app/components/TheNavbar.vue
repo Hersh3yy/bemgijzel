@@ -45,15 +45,15 @@
       </UDropdownMenu>
 
       <NuxtLink to="/albums/Art">
-        <UButton label="Art" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
+        <UButton label="ART" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
       </NuxtLink>
 
       <NuxtLink to="/whoami">
-        <UButton label="I Am..." color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
+        <UButton label="I AM..." color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
       </NuxtLink>
 
       <NuxtLink to="/contact">
-        <UButton label="Contact" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
+        <UButton label="CONTACT" color="primary" variant="ghost" class="navbar-link hover:navbar-link-hover" />
       </NuxtLink>
     </div>
   </nav>
@@ -62,16 +62,16 @@
 <script setup lang="ts">
 const actingDropdownItems = [
   [
-    { label: 'Fiction: Acting', to: '/albums/ActingFiction' },
-    { label: 'Music Videos', to: '/albums/MusicVideos' },
-    { label: 'Commercials', to: '/albums/Commercials' }
+    { label: 'FICTION: ACTING', to: '/albums/ActingFiction' },
+    { label: 'MUSIC VIDEOS', to: '/albums/MusicVideos' },
+    { label: 'COMMERCIALS', to: '/albums/Commercials' }
   ]
 ];
 
 const modelingDropdownItems = [
   [
-    { label: 'Corporate', to: '/albums/Corporate' },
-    { label: 'Fashion', to: '/albums/Fashion' }
+    { label: 'CORPORATE', to: '/albums/Corporate' },
+    { label: 'FASHION', to: '/albums/Fashion' }
   ]
 ];
 </script>
@@ -128,9 +128,9 @@ const modelingDropdownItems = [
 .navbar-link {
   color: var(--color-site-gold-500) !important;
   background-color: transparent !important;
-  font-size: 1.1rem !important;
-  font-weight: 500 !important;
-  padding: 0.75rem 1rem !important;
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  padding: 0.875rem 1.25rem !important;
   border-radius: 0.5rem !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   cursor: pointer !important;
@@ -204,7 +204,9 @@ const modelingDropdownItems = [
 /* Style dropdown items */
 :deep(.fixed a) {
   color: var(--color-site-gold-500) !important;
-  padding: 0.75rem 1rem !important;
+  padding: 0.875rem 1.25rem !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
   transition: all 0.3s ease !important;
 }
 
