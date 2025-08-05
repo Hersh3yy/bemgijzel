@@ -5,20 +5,20 @@
       <NuxtLink to="/">
         <img src="/icons/BG_LOGO.png" alt="Site Logo" class="navbar-logo cursor-pointer hover:opacity-80 transition-opacity" />
       </NuxtLink>
-      <a href="https://www.youtube.com/@benjamingijzel" target="_blank" aria-label="YouTube">
-        <UIcon name="i-mdi-youtube" class="navbar-social-icon" />
-      </a>
-      <a href="https://www.spotlight.com/1234-5678-9012" target="_blank" aria-label="Spotlight">
-        <UIcon name="i-mdi-theater" class="navbar-social-icon" />
-      </a>
       <a href="https://www.imdb.com/name/nm7465457/" target="_blank" aria-label="IMDB">
         <UIcon name="i-mdi-filmstrip" class="navbar-social-icon" />
+      </a>
+      <a href="https://www.spotlight.com/9917-0160-4801" target="_blank" aria-label="Spotlight">
+        <UIcon name="i-mdi-theater" class="navbar-social-icon" />
       </a>
       <a href="https://www.instagram.com/benjamin.gijzel/" target="_blank" aria-label="Instagram">
         <UIcon name="i-mdi-instagram" class="navbar-social-icon" />
       </a>
       <a href="https://www.facebook.com/profile.php?id=100012437895143" target="_blank" aria-label="Facebook">
         <UIcon name="i-mdi-facebook" class="navbar-social-icon" />
+      </a>
+      <a href="https://www.youtube.com/@benjamingijzel446" target="_blank" aria-label="YouTube">
+        <UIcon name="i-mdi-youtube" class="navbar-social-icon" />
       </a>
     </div>
 
