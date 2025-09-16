@@ -230,6 +230,8 @@ watch(() => route.path, () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  position: relative;
+  z-index: 99998;
 }
 
 .mobile-menu-btn {
@@ -436,6 +438,8 @@ watch(() => route.path, () => {
   border: 1px solid transparent !important;
   position: relative !important;
   overflow: hidden !important;
+  pointer-events: auto !important;
+  z-index: 99999 !important;
 }
 
 .navbar-link::before {
@@ -514,7 +518,7 @@ watch(() => route.path, () => {
 }
 
 /* Dropdown menu styling - when open */
-:deep([data-headlessui-state="open"]) .navbar-link {
+:deep([data-headlessui-state="open"] button.navbar-link) {
   background-color: var(--color-site-gold-500) !important;
   color: var(--color-site-black) !important;
   border-color: var(--color-site-gold-500) !important;
@@ -525,6 +529,20 @@ watch(() => route.path, () => {
   background-color: var(--color-site-black) !important;
   border: 1px solid var(--color-site-gold-700) !important;
   border-radius: 0.5rem !important;
+  z-index: 99997 !important;
+}
+
+/* Prevent dropdown backdrop from blocking navbar interactions */
+:deep([data-headlessui-state="open"]) {
+  pointer-events: none !important;
+}
+
+:deep([data-headlessui-state="open"] > button) {
+  pointer-events: auto !important;
+}
+
+:deep([data-headlessui-state="open"] .fixed) {
+  pointer-events: auto !important;
 }
 
 /* Style dropdown items */
