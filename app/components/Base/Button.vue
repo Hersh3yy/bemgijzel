@@ -17,6 +17,7 @@
       'base-button',
       variantClass,
       sizeClass,
+      widthClass,
       {
         'base-button-loading': loading,
         'base-button-disabled': disabled
@@ -32,6 +33,7 @@
 interface Props {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger'
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  width?: 'narrow' | 'normal' | 'wide' | 'full'
   loading?: boolean
   disabled?: boolean
   to?: string
@@ -47,6 +49,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   variant: 'primary',
   size: 'md',
+  width: 'normal',
   loading: false,
   disabled: false
 })
@@ -57,7 +60,7 @@ const emit = defineEmits<{
 
 // Map our custom variants to UButton variants
 const uiVariant = computed(() => {
-  const variantMap = {
+  const variantMap: Record<string, 'link' | 'ghost' | 'outline' | 'solid' | 'soft' | 'subtle'> = {
     primary: 'solid',
     secondary: 'solid', 
     ghost: 'ghost',
@@ -69,14 +72,14 @@ const uiVariant = computed(() => {
 
 // Map our custom variants to UButton colors
 const uiColor = computed(() => {
-  const colorMap = {
+  const colorMap: Record<string, 'primary' | 'secondary' | 'gold' | 'neutral'> = {
     primary: 'primary',
-    secondary: 'gray', 
+    secondary: 'neutral', 
     ghost: 'primary',
     outline: 'primary',
-    danger: 'red'
+    danger: 'primary'
   }
-  return props.color || colorMap[props.variant] || 'primary'
+  return (props.color as 'primary' | 'secondary' | 'gold' | 'neutral') || colorMap[props.variant] || 'primary'
 })
 
 const variantClass = computed(() => {
@@ -98,6 +101,16 @@ const sizeClass = computed(() => {
     xl: 'base-button-xl'
   }
   return sizes[props.size]
+})
+
+const widthClass = computed(() => {
+  const widths = {
+    narrow: 'base-button-narrow',
+    normal: 'base-button-normal',
+    wide: 'base-button-wide',
+    full: 'base-button-full'
+  }
+  return widths[props.width]
 })
 
 const handleClick = (event: MouseEvent) => {
@@ -193,6 +206,23 @@ const handleClick = (event: MouseEvent) => {
   font-size: 1.25rem;
 }
 
+/* Width styles */
+.base-button-narrow {
+  min-width: 80px;
+}
+
+.base-button-normal {
+  min-width: 120px;
+}
+
+.base-button-wide {
+  min-width: 200px;
+}
+
+.base-button-full {
+  width: 100%;
+}
+
 /* State styles */
 .base-button-loading {
   opacity: 0.75;
@@ -211,18 +241,23 @@ const handleClick = (event: MouseEvent) => {
 }
 
 /* Deep selectors for Nuxt UI overrides - more specific targeting */
-:deep(.base-button) {
+:deep(.base-button),
+:deep(.base-button-primary),
+:deep(button.base-button),
+:deep(button.base-button-primary) {
   background-color: var(--color-site-gold-500) !important;
   color: var(--color-black) !important;
   border: none !important;
   font-weight: 600 !important;
 }
 
-:deep(.base-button:hover) {
+:deep(.base-button:hover),
+:deep(.base-button-primary:hover) {
   background-color: var(--color-site-gold-400) !important;
 }
 
-:deep(.base-button:focus) {
+:deep(.base-button:focus),
+:deep(.base-button-primary:focus) {
   box-shadow: 0 0 0 2px var(--color-site-gold-500) !important;
   outline: none !important;
 }
@@ -247,5 +282,14 @@ const handleClick = (event: MouseEvent) => {
 :deep(.base-button-outline:hover) {
   background-color: var(--color-site-gold-500) !important;
   color: var(--color-black) !important;
+}
+
+/* Ensure button is always visible and properly styled */
+:deep(.base-button) {
+  min-height: 48px !important;
+  min-width: 120px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
 }
 </style>

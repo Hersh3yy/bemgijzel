@@ -1,1370 +1,192 @@
+# Nuxt 4 + Nuxt UI Project Setup & Design System Guidelines
 
+## Project Structure
+This project uses Nuxt 3 with compatibility version 4, which means client-side code is in `app/`. In Nuxt 3, components are auto-imported and named based on directory structure.
 
-This project is nuxt 3 with compatibility version 4, which means client side code is in app/. in nuxt 3, components are auto imported and named base on directory. 
-components/Album/Image.vue = <AlbuumImage>
+**Component Naming Convention:**
+- `components/Album/Image.vue` = `<AlbumImage>`
+- `components/Base/Button.vue` = `<BaseButton>`
+- `components/Contact/Form.vue` = `<ContactForm>`
 
+## Nuxt 4 Compatibility
+This project uses `compatibilityVersion: 4` to opt into Nuxt 4 behavior:
 
-Testing Nuxt 4
-The release date of Nuxt 4 is to be announced. It is dependent on having enough time after Nitro's major release to be properly tested in the community. You can follow progress towards Nitro's release in this PR.
-
-Until the release, it is possible to test many of Nuxt 4's breaking changes from Nuxt version 3.12+.
-
-
-Watch a video from Alexander Lichter showing how to opt in to Nuxt 4's breaking changes already
-Opting in to Nuxt 4
-First, upgrade Nuxt to the latest release.
-
-Then you can set your compatibilityVersion to match Nuxt 4 behavior:
-
-nuxt.config.ts
-
+```typescript
+// nuxt.config.ts
 export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4,
   },
-  // To re-enable _all_ Nuxt v3 behavior, set the following options:
-  // srcDir: '.',
-  // dir: {
-  //   app: 'app'
-  // },
-  // experimental: {
-  //   scanPageMeta: 'after-resolve',
-  //   sharedPrerenderData: false,
-  //   compileTemplate: true,
-  //   resetAsyncDataToUndefined: true,
-  //   templateUtils: true,
-  //   relativeWatchPaths: true,
-  //   normalizeComponentNames: false,
-  //   spaLoadingTemplateLocation: 'within',
-  //   parseErrorData: false,
-  //   pendingWhenIdle: true,
-  //   alwaysRunFetchOnKeyChange: true,
-  //   defaults: {
-  //     useAsyncData: {
-  //       deep: true
-  //     }
-  //   }
-  // },
-  // features: {
-  //   inlineStyles: true
-  // },
-  // unhead: {
-  //   renderSSRHeadOptions: {
-  //     omitLineBreaks: false
-  //   }
-  // }
 })
-
-Expand code
-For now, you need to define the compatibility version in each layer that opts into Nuxt 4 behavior. This will not be required after Nuxt 4 is released.
-When you set your compatibilityVersion to 4, defaults throughout your Nuxt configuration will change to opt in to Nuxt v4 behavior, but you can granularly re-enable Nuxt v3 behavior when testing, following the commented out lines above. Please file issues if so, so that we can address them in Nuxt or in the ecosystem.
-
-Breaking or significant changes will be noted here along with migration steps for backward/forward compatibility.
-
-This section is subject to change until the final release, so please check back here regularly if you are testing Nuxt 4 using compatibilityVersion: 4.
-Migrating Using Codemods
-To facilitate the upgrade process, we have collaborated with the Codemod team to automate many migration steps with some open-source codemods.
-
-If you encounter any issues, please report them to the Codemod team with npx codemod feedback 🙏
-For a complete list of Nuxt 4 codemods, detailed information on each, their source, and various ways to run them, visit the Codemod Registry.
-
-You can run all the codemods mentioned in this guide using the following codemod recipe:
-
-
-npm
-
-yarn
-
-pnpm
-
-bun
-
-npx codemod@latest nuxt/4/migration-recipe
-This command will execute all codemods in sequence, with the option to deselect any that you do not wish to run. Each codemod is also listed below alongside its respective change and can be executed independently.
-
-New Directory Structure
-🚦 Impact Level: Significant
-
-Nuxt now defaults to a new directory structure, with backwards compatibility (so if Nuxt detects you are using the old structure, such as with a top-level pages/ directory, this new structure will not apply).
-
-👉 See full RFC
-
-What Changed
-the new Nuxt default srcDir is app/ by default, and most things are resolved from there.
-serverDir now defaults to <rootDir>/server rather than <srcDir>/server
-layers/, modules/ and public/ are resolved relative to <rootDir> by default
-if using Nuxt Content v2.13+, content/ is resolved relative to <rootDir>
-a new dir.app is added, which is the directory we look for router.options.ts and spa-loading-template.html - this defaults to <srcDir>/
-An example v4 folder structure.
-👉 For more details, see the PR implementing this change.
-
-Reasons for Change
-Performance - placing all your code in the root of your repo causes issues with .git/ and node_modules/ folders being scanned/included by FS watchers which can significantly delay startup on non-Mac OSes.
-IDE type-safety - server/ and the rest of your app are running in two entirely different contexts with different global imports available, and making sure server/ isn't inside the same folder as the rest of your app is a big first step to ensuring you get good auto-completes in your IDE.
-
-Watch a video from Vue School on the new directory structure
-Migration Steps
-Create a new directory called app/.
-Move your assets/, components/, composables/, layouts/, middleware/, pages/, plugins/ and utils/ folders under it, as well as app.vue, error.vue, app.config.ts. If you have an app/router-options.ts or app/spa-loading-template.html, these paths remain the same.
-Make sure your nuxt.config.ts, content/, layers/, modules/, public/ and server/ folders remain outside the app/ folder, in the root of your project.
-Remember to update any third-party configuration files to work with the new directory structure, such as your tailwindcss or eslint configuration (if required - @nuxtjs/tailwindcss should automatically configure tailwindcss correctly).
-
-
-
-
-
-
-
-This project is a migration from a nuxt 2 project. the index was a mosaic of links to the different albums.
-The albums which were available in the nav bar and on the mosiac images which had link text in them, were a slider of images which were loaded from a cms. 
-
-
-I am busy also making a cms that is more visual for my senior citizen client. 
-Changes for albums: my client wants a grid where you click on the image to see it bigger and fitting ont he screen, no overlap, i suppose it would be nice to have left and right , arrows on computer possible, sliding possible on mobile
-
-Changes for index : the mosaic with links. i am making a visual mosaic editor in the cms. so i need to think of the best way that when the site loads it is able to remake its page layout. or we cache it somewhere. not sure, need to brain storm that , i am still developing so can change set up.
-I will give you the mosaic code below
-
-
-
-
-
-
-<template>
-    <div class="tile is-ancestor">
-        <div class="tile is-vertical is-7">
-            <div class="tile">
-                <div class="tile is-parent is-vertical" style="vertical-align:middle">
-                    <div class="tile is-child image">
-                        <router-link :to="{ path: '/new' }">
-                            <img src="~/assets/photos/new.png" />
-                            <!-- <div class="middle">
-                                <div class="middle-text">LATEST POSTED CONTENT</div>
-                            </div> -->
-                        </router-link>
-                    </div>
-                    <div class="tile is-child image" style="vertical-align: middle;">
-                        <router-link :to="{ path: '/showreel' }">
-                            <img src="~/assets/photos/landing_showreel2.jpeg" />
-                            <div class="middle">
-                                <div class="middle-text">SHOWREELS</div>
-                            </div>
-                        </router-link>
-                    </div>
-
-                </div>
-                <div class="tile is-parent is-vertical">
-                    <div class="tile is-child image">
-                        <router-link :to="{ path: '/fiction' }">
-                            <img src="~/assets/photos/landing_acting.jpg" />
-                            <div class="middle">
-                                <div class="middle-text">ACTING FICTION</div>
-                            </div>
-                        </router-link>
-                    </div>
-                    <div class="tile is-child image">
-                        <router-link :to="{ path: '/commercial' }">
-                            <img src="~/assets/photos/landing_commercial.jpeg" />
-                            <div class="middle">
-                                <div class="middle-text">ACTING CORPORATE</div>
-                            </div>
-                        </router-link>
-                    </div>
-                    <div class="tile is-child image">
-                        <router-link :to="{ path: '/music-videos' }">
-                            <img src="~/assets/photos/landing_music.jpeg" />
-                            <div class="middle">
-                                <div class="middle-text">MUSIC VIDEOS</div>
-                            </div>
-                        </router-link>
-                    </div>
-                </div>
-            </div>
-            <div class="tile is-parent">
-                <div class="tile is-child image">
-                    <router-link :to="{ path: '/corporate' }">
-                        <img src="~/assets/photos/landing_corporate.jpg" />
-                        <div class="middle">
-                            <div class="middle-text">MODELING CORPORATE</div>
-                        </div>
-                    </router-link>
-                </div>
-            </div>
-        </div>
-        <div class="tile is-vertical">
-            <div class="tile is-parent">
-                <div class="tile is-child image">
-                    <router-link :to="{ path: '/fashion' }">
-                        <img src="~/assets/photos/landing_fashion.jpeg" />
-                        <div class="middle">
-                            <div class="middle-text">MODELING FASHION</div>
-                        </div>
-                    </router-link>
-                </div>
-            </div>
-            <div class="tile is-parent">
-                <div class="tile is-child image">
-                    <router-link :to="{ path: '/art' }">
-                        <img src="~/assets/photos/landing_art.jpg" />
-                        <div class="middle">
-                            <div class="middle-text">ART</div>
-                        </div>
-                    </router-link>
-                </div>
-            </div>
-            <div class="tile is-parent">
-
-            </div>
-        </div>
-    </div>
-</template>
-<script>
-export default {
-    name: "HomePage",
-    mounted() {
-        this.$store.dispatch("iAms/refreshIAms");
-    }
-};
-
-</script>
-<style scoped>
-    .middle {
-        transition: .5s ease;
-        opacity: 0.5;
-        position: absolute;
-        background-color: #111111;
-        top: 50%;
-        left: 50%;
-        width: 100%;
-        transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        text-align: center;
-        vertical-align: middle;
-    }
-
-    .middle-text {
-        opacity: 1 !important;
-        color: white;
-        font-weight: bold;
-    }
-
-    .image:hover .middle {
-        opacity: 1;
-    }
-    .image:hover img {
-        opacity: 0.8;
-    }
-</style>
-
-
-
-
-and the nav bar
-
-
-
-<template>
-    <b-navbar>
-        <template slot="brand">
-            <b-navbar-item tag="router-link" :to="{ path: '/' }">
-                <img
-                    src="~/assets/icons/BG_LOGO.png"
-                    style="max-height:70px;"
-                    alt="Lightweight UI components for Vue.js based on Bulma"
-                >
-            </b-navbar-item>
-            <b-navbar-item target="_blank" href="https://www.facebook.com/profile.php?id=100012437895143&fref=ts">
-                <img
-                    src="~/assets/icons/FB_LOGO.png"
-                    style="max-height:40px;"
-                >
-            </b-navbar-item>
-            <b-navbar-item tag="a" target="_blank" href="https://www.instagram.com/benjamin.gijzel/">
-                <img
-                    src="~/assets/icons/IG_LOGO.png"
-                    style="max-height:40px;"
-                >
-            </b-navbar-item>
-            <b-navbar-item tag="a" target="_blank" href="https://www.imdb.com/name/nm7465457/">
-                <img
-                    src="~/assets/icons/IMDB_LOGO.png"
-                    style="max-height:40px;"
-                >
-            </b-navbar-item>
-        </template>
-        <template slot="start">
-            <b-navbar-item tag="router-link" :to="{ path: '/whoami' }">
-                I am..
-            </b-navbar-item>
-            <b-navbar-item tag="router-link" :to="{ path: '/showreel'}">
-                Showreels
-            </b-navbar-item>
-            <b-navbar-item tag="router-link" :to="{ path: '/contact'}">
-                Contact
-            </b-navbar-item>
-            <b-navbar-item tag="router-link" :to="{ path: '/new'}">
-                New!
-            </b-navbar-item>
-        </template>
-        <template slot="end">
-            <b-navbar-dropdown label="Acting">
-                <b-navbar-item tag="router-link" :to="{ path: '/fiction'}">
-                    Fiction
-                </b-navbar-item>
-                <b-navbar-item tag="router-link" :to="{ path: '/commercial'}">
-                    Corporate
-                </b-navbar-item>
-                <b-navbar-item tag="router-link" :to="{ path: '/music-videos'}">
-                    Music Videos
-                </b-navbar-item>
-            </b-navbar-dropdown>
-            <b-navbar-dropdown label="Modeling">
-                <b-navbar-item tag="router-link" :to="{ path: '/fashion'}">
-                    Fashion
-                </b-navbar-item>
-                <b-navbar-item tag="router-link" :to="{ path: '/corporate'}">
-                    Corporate
-                </b-navbar-item>
-            </b-navbar-dropdown>
-            <b-navbar-item tag="router-link" :to="{ path: '/art'}">
-                Art
-            </b-navbar-item>
-        </template>
-    </b-navbar>
-</template>
-
-
-
-
-this is css from the last project:
-
-// Import Bulma's core
-@import "~bulma/sass/utilities/_all";
-
-// Set your colors
-$primary: #000000;
-$primary-invert: #c49326;
-$white: #ffffff;
-$white-invert:#000000;
-
-// Setup $colors to use as bulma classes (e.g. 'is-twitter')
-$colors: (
-    "primary": ($primary, $primary-invert),
-    "white": ($white, $white-invert),
-    "primary-invert": ($primary-invert, $primary),
-);
-
-// Links
-$link: $primary;
-$link-invert: $primary-invert;
-$link-focus-border: $primary;
-
-$card-background-color: $primary-invert;
-$background: $primary;
-$carousel-arrow-background: $primary-invert;
-$carousel-min-height: 800px;
-$navbar-background-color: $primary;
-$navbar-item-color: $primary-invert;
-$navbar-height: 6rem;
-$navbar-item-hover-background-color: $primary-invert;
-$navbar-dropdown-item-hover-background-color: #c49326;
-$navbar-dropdown-background-color: #ffffff;
-$navbar-dropdown-item-hover-color: #ffffff;
-// Import Bulma and Buefy styles
-@import "~bulma";
-@import "~buefy/src/scss/buefy";
-
-
-
-
-
-
-
-
-i am also using nuxt/ui for the first time, i will paste in some docs here.
-
-
-
-text from landing page
-
-The Intuitive
-Vue UI Library
-Create beautiful, responsive & accessible web apps quickly with Vue or Nuxt. Nuxt UI is an open-source UI library of 50+ customizable components built with Tailwind CSS and Reka UI.
-Get started
-Explore components
-Styled with Tailwind CSS v4
-Beautifully styled by default, overwrite any style you want.
-Accessible with Reka UI
-Robust accessibility out of the box.
-Type-safe with TypeScript
-Auto-complete and type safety for all components.
-App previewApp
-Accordion previewAccordion
-Alert previewAlert
-Avatar previewAvatar
-AvatarGroup previewAvatarGroup
-Badge previewBadge
-Breadcrumb previewBreadcrumb
-Button previewButton
-ButtonGroup previewButtonGroup
-Calendar previewCalendar
-App previewApp
-Accordion previewAccordion
-Alert previewAlert
-Avatar previewAvatar
-AvatarGroup previewAvatarGroup
-Badge previewBadge
-Breadcrumb previewBreadcrumb
-Button previewButton
-ButtonGroup previewButtonGroup
-Calendar previewCalendar
-App previewApp
-Accordion previewAccordion
-Alert previewAlert
-Avatar previewAvatar
-AvatarGroup previewAvatarGroup
-Badge previewBadge
-Breadcrumb previewBreadcrumb
-Button previewButton
-ButtonGroup previewButtonGroup
-Calendar previewCalendar
-App previewApp
-Accordion previewAccordion
-Alert previewAlert
-Avatar previewAvatar
-AvatarGroup previewAvatarGroup
-Badge previewBadge
-Breadcrumb previewBreadcrumb
-Button previewButton
-ButtonGroup previewButtonGroup
-Calendar previewCalendar
-Card previewCard
-Carousel previewCarousel
-Checkbox previewCheckbox
-CheckboxGroup previewCheckboxGroup
-Chip previewChip
-Collapsible previewCollapsible
-ColorPicker previewColorPicker
-CommandPalette previewCommandPalette
-Container previewContainer
-ContextMenu previewContextMenu
-Card previewCard
-Carousel previewCarousel
-Checkbox previewCheckbox
-CheckboxGroup previewCheckboxGroup
-Chip previewChip
-Collapsible previewCollapsible
-ColorPicker previewColorPicker
-CommandPalette previewCommandPalette
-Container previewContainer
-ContextMenu previewContextMenu
-Card previewCard
-Carousel previewCarousel
-Checkbox previewCheckbox
-CheckboxGroup previewCheckboxGroup
-Chip previewChip
-Collapsible previewCollapsible
-ColorPicker previewColorPicker
-CommandPalette previewCommandPalette
-Container previewContainer
-ContextMenu previewContextMenu
-Card previewCard
-Carousel previewCarousel
-Checkbox previewCheckbox
-CheckboxGroup previewCheckboxGroup
-Chip previewChip
-Collapsible previewCollapsible
-ColorPicker previewColorPicker
-CommandPalette previewCommandPalette
-Container previewContainer
-ContextMenu previewContextMenu
-Go to Build for the modern web
-Build for the modern web
-Powered by Tailwind CSS v4 and Reka UI for top performance and accessibility.
-
-Go to Flexible design system
-Flexible design system
-Beautiful by default and easily customizable with design tokens to your brand.
-
-Go to Internationalization (i18n)
-Internationalization (i18n)
-Nuxt UI is translated into 30+ languages, works well with i18n and multi-directional support (LTR/RTL).
-
-Go to Easy font customization
-Easy font customization
-Performance-optimized fonts with first-class @nuxt/fonts integration.
-
-Go to Large icons sets
-Large icons sets
-Access to over 200,000 customizable icons from Iconify, seamlessly integrated with Iconify.
-
-Go to Light & Dark
-Light & Dark
-Dark mode-ready components, seamless integration with @nuxtjs/color-mode.
-
-Flexible design system
-Build your next project faster with Nuxt UI's comprehensive design system. Featuring semantic color aliases, comprehensive design tokens, and automatic light/dark mode support for accessible components out of the box.
-Color aliases via AppConfig
-Configure 7 semantic color aliases (primary, secondary, success, info, warning, error, neutral) at runtime through AppConfig without rebuilding your application
-Comprehensive design tokens
-Extensive set of neutral palette tokens for text, backgrounds, and borders with automatic light/dark mode support via CSS variables like --ui-text, --ui-bg, --ui-border
-Global style variables
-Customize global styling with --ui-radius for consistent border rounding and --ui-container for layout widths across your entire application
-Customize design system
-
-app.config.ts
-
-main.css
-
-export default defineAppConfig({
-  ui: {
-    colors: {
-      primary: 'indigo',
-      secondary: 'pink',
-      success: 'green',
-      info: 'blue',
-      warning: 'orange',
-      error: 'red',
-      neutral: 'zinc'
-    }
-  }
-})
-Powerful component customization
-Nuxt UI leverages Tailwind Variants to provide a powerful, maintainable system for managing component styles and intelligently merging Tailwind CSS classes without conflicts.
-
-Powerful slot and variant system
-Customize component parts with slots and apply different styles based on props, creating consistent UI patterns with granular control over styling
-Global theme with AppConfig
-Configure component styles project-wide with a centralized AppConfig that maintains consistency across your application without rebuilding
-Per-component customization
-Fine-tune individual components with the ui prop for slot-specific styling and class prop for root element overrides, providing maximum flexibility
-Customize components
-
-app.config.ts
-
-Collapsible.vue
-
-export default defineAppConfig({
-  ui: {
-    button: {
-      slots: {
-        base: 'group font-bold',
-        trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200'
-      },
-      defaultVariants: {
-        color: 'neutral',
-        variant: 'subtle'
-      }
-    }
-  }
-})
-
-
-
-
-
-Getting Started
-Introduction
-Nuxt UI harnesses the combined strengths of Reka UI, Tailwind CSS, and Tailwind Variants to offer developers an unparalleled set of tools for creating sophisticated, accessible, and highly performant user interfaces.
-
-Reka UI
-We've transitioned from Headless UI to Reka UI as our core component foundation. This shift brings several key advantages:
-
-Extensive Component Library: With 55+ primitives, Reka UI significantly expands our component offerings.
-Active Development: Reka UI's growing popularity ensures ongoing improvements and updates.
-Enhanced Accessibility: Built-in accessibility features align with our commitment to inclusive design.
-Vue 3 Optimization: Seamless integration with Vue 3 and the Composition API.
-This transition empowers Nuxt UI to become a more comprehensive and flexible UI library, offering developers greater power and customization options.
-
-Tailwind CSS v4
-Nuxt UI integrates the latest Tailwind CSS v4, bringing significant improvements:
-
-Built for performance: Full builds in the new engine are up to 5x faster, and incremental builds are over 100x faster — and measured in microseconds.
-Unified toolchain: Built-in import handling, vendor prefixing, and syntax transforms, with no additional tooling required.
-CSS-first configuration: A reimagined developer experience where you customize and extend the framework directly in CSS instead of a JavaScript configuration file.
-Designed for the modern web: Built on native cascade layers, wide-gamut colors, and including first-class support for modern CSS features like container queries, @starting-style, popovers, and more.
-Learn about all the breaking changes in Tailwind CSS v4.
-Tailwind Variants
-We've adopted Tailwind Variants to manage our design system, offering:
-
-Dynamic Styling: Flexible component variants with a powerful API
-Type Safety: Full TypeScript support with auto-completion
-Conflict Resolution: Efficient merging of conflicting styles
-This integration unifies the styling of components, ensuring consistency and code maintainability.
-
-TypeScript Integration
-Nuxt UI offers significantly improved TypeScript integration, providing a superior developer experience:
-
-Enhanced Auto-completion:
-Full auto-completion for component props based on your theme
-Intelligent suggestions for app.config.ts theme configuration
-Generic-based Components:
-Built using Vue 3 Generics
-Improved type inference for slots and events
-Type-safe Theming:
-Leveraging Tailwind Variants for type-safe styling options
-Customizable types for extended theme configurations
-Check out an example of the Accordion component with auto-completion for props and slots.
-Vue compatibility
-You can now use Nuxt UI in any Vue project without Nuxt by adding the Vite and Vue plugins to your configuration. This provides:
-
-Auto-imports: Components and composables are automatically imported and available globally
-Theming System: Full theming support with customizable colors, sizes, variants and more
-Developer Experience: Complete TypeScript support with IntelliSense and auto-completion
-
-
-
-
-
-
-
-
-Setup
-Add to a Nuxt project
-Install the Nuxt UI package
-
-pnpm
-
-yarn
-
-npm
-
-bun
-
-yarn add @nuxt/ui
-If you're using pnpm, ensure that you either set shamefully-hoist=true in your .npmrc file or install tailwindcss in your project's root directory.
-Add the Nuxt UI module in your nuxt.config.ts
-nuxt.config.ts
-
-export default defineNuxtConfig({
-  modules: ['@nuxt/ui']
-})
-Import Tailwind CSS and Nuxt UI in your CSS
-
-app/assets/css/main.css
-
-nuxt.config.ts
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-It's recommended to install the Tailwind CSS IntelliSense extension for VSCode and add the following settings:
-.vscode/settings.json
-
-{
-  "files.associations": {
-    "*.css": "tailwindcss"
-  },
-  "editor.quickSuggestions": {
-    "strings": "on"
-  },
-  "tailwindCSS.classAttributes": ["class", "ui"],
-  "tailwindCSS.experimental.classRegex": [
-    ["ui:\\s*{([^)]*)\\s*}", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-  ]
+```
+
+**Directory Structure:**
+- `app/` - All client-side code (components, pages, layouts, etc.)
+- `server/` - Server-side code (API routes, etc.)
+- `public/` - Static assets
+- `nuxt.config.ts` - Configuration (stays in root)
+
+## Design System Strategy
+
+### 1. CSS & Styling Philosophy
+- **Primary**: Use Tailwind CSS classes as much as possible
+- **Secondary**: Raw CSS only when absolutely necessary
+- **Atomic Design**: Build reusable components with props for variants
+
+### 2. Component Architecture
+
+#### Base Components (`components/Base/`)
+These are your atomic design building blocks. Each should:
+- Have clear, semantic props for variants
+- Encapsulate their own styling logic
+- Be reusable across the entire application
+- Use Tailwind classes with CSS variables for consistency
+
+**Example BaseButton Props:**
+```typescript
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  width?: 'narrow' | 'normal' | 'wide' | 'full'
+  loading?: boolean
+  disabled?: boolean
 }
-Wrap your app with App component
-app.vue
+```
 
-<template>
-  <UApp>
-    <NuxtPage />
-  </UApp>
-</template>
-The App component provides global configurations and is required for Toast, Tooltip components to work as well as Programmatic Overlays.
-Use our Nuxt Starter
-Start your project using the nuxt/starter#ui template with Nuxt UI pre-configured.
+#### Feature Components (`components/Contact/`, `components/Album/`, etc.)
+These compose base components and add specific functionality:
+- Use base components as building blocks
+- Handle business logic and data
+- Keep styling minimal, delegate to base components
 
-Create a new project locally by running the following command:
+### 3. CSS Organization
 
-Terminal
+#### Global Styles (`app/assets/css/main.css`)
+- Define CSS variables for design tokens
+- Create utility classes for common patterns
+- Set up global component overrides
+- Handle theme and color system
 
-npx nuxi init -t ui <my-app>
-The <my-app> argument is the name of the directory where the project will be created, replace it with your project name.
-Once the installation is complete, navigate into your project and start the development server:
+#### Component Styles
+- Base components: Encapsulate all styling with props
+- Feature components: Minimal styling, rely on base components
+- Use `:deep()` selectors sparingly and only for necessary overrides
 
-Terminal
+### 4. Design Token System
 
-cd <my-app>
-npm run dev
-Options
-You can customize Nuxt UI by providing options in your nuxt.config.ts.
-
-prefix
-Use the prefix option to change the prefix of the components.
-
-Default: U
-nuxt.config.ts
-
-export default defineNuxtConfig({
-  modules: ['@nuxt/ui'],
-  css: ['~/assets/css/main.css'],
-  ui: {
-    prefix: 'Nuxt'
-  }
-})
-fonts
-Use the fonts option to enable or disable the @nuxt/fonts module.
-
-Default: true
-nuxt.config.ts
-
-export default defineNuxtConfig({
-  modules: ['@nuxt/ui'],
-  css: ['~/assets/css/main.css'],
-  ui: {
-    fonts: false
-  }
-})
-colorMode
-Use the colorMode option to enable or disable the @nuxt/color-mode module.
-
-Default: true
-nuxt.config.ts
-
-export default defineNuxtConfig({
-  modules: ['@nuxt/ui'],
-  css: ['~/assets/css/main.css'],
-  ui: {
-    colorMode: false
-  }
-})
-theme.colors
-Use the theme.colors option to define the dynamic color aliases used to generate components theme.
-
-Default: ['primary', 'secondary', 'success', 'info', 'warning', 'error']
-nuxt.config.ts
-
-export default defineNuxtConfig({
-  modules: ['@nuxt/ui'],
-  css: ['~/assets/css/main.css'],
-  ui: {
-    theme: {
-      colors: ['primary', 'error']
-    }
-  }
-})
-Learn more about color customization and theming in the Theme section.
-theme.transitions
-Use the theme.transitions option to enable or disable transitions on components.
-
-Default: true
-nuxt.config.ts
-
-export default defineNuxtConfig({
-  modules: ['@nuxt/ui'],
-  css: ['~/assets/css/main.css'],
-  ui: {
-    theme: {
-      transitions: false
-    }
-  }
-})
-This option adds the transition-colors class on components with hover or active states.
-Continuous Releases
-Nuxt UI uses pkg.pr.new for continuous preview releases, providing developers with instant access to the latest features and bug fixes without waiting for official releases.
-
-Automatic preview releases are created for all commits and PRs to the v3 branch. Use them by replacing your package version with the specific commit hash or PR number.
-
-package.json
-
-{
-  "dependencies": {
--   "@nuxt/ui": "^3.0.0",
-+   "@nuxt/ui": "https://pkg.pr.new/@nuxt/ui@4c96909",
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-Getting Started
-Theme
-Learn how to customize Nuxt UI components using Tailwind CSS v4, CSS variables and the Tailwind Variants API for powerful and flexible theming.
-Tailwind CSS
-Nuxt UI uses Tailwind CSS v4, you can read the official upgrade guide to learn about all the breaking changes.
-
-@theme
-Tailwind CSS v4 takes a CSS-first configuration approach, you now customize your theme with CSS variables inside a @theme directive to define your project's custom design tokens, like fonts, colors, and breakpoints:
-
-app/assets/css/main.css
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-
+#### Color System
+```css
+/* Define your brand colors */
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
-
-  --breakpoint-3xl: 1920px;
-
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+  --color-site-black: #010101;
+  --color-site-gold-500: #c49326;
+  /* ... other brand colors */
 }
-The @theme directive tells Tailwind to make new utilities and variants available based on these variables. It's the equivalent of the theme.extend key in Tailwind CSS v3 tailwind.config.ts file.
 
-Learn more about customizing your theme in the theme variables documentation.
-@source
-You can use the @source directive to explicitly specify source files that aren't picked up by Tailwind's automatic content detection:
-
-This can be useful when writing Tailwind CSS classes in markdown files with @nuxt/content for example:
-
-app/assets/css/main.css
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-
-@source "../../../content";
-/* Use this if you're not using compatibilityVersion: 4: https://nuxt.com/docs/getting-started/upgrade#opting-in-to-nuxt-4 */
-@source "../../content";
-Learn more about automatic content detection in the detecting classes in source files documentation.
-Design system
-Nuxt UI extends Tailwind CSS's theming capabilities, providing a flexible design system with pre-configured color aliases based on Tailwind CSS colors. This allows for easy customization and quick adaptation of the UI to your brand's aesthetic.
-
-Color	Default	Description
-primary	green	Main brand color, used as the default color for components.
-secondary	blue	Secondary color to complement the primary color.
-success	green	Used for success states.
-info	blue	Used for informational states.
-warning	yellow	Used for warning states.
-error	red	Used for form error validation states.
-neutral	slate	Neutral color for backgrounds, text, etc.
-These colors are used to style the components but also to generate the color props:
-
-color
-
-primary
-Button
-
-<template>
-  <UButton color="primary">Button</UButton>
-</template>
-Try the  theme picker in the header above to change primary and neutral colors.
-Configuration
-You can configure these color aliases at runtime in your app.config.ts file under the ui.colors key, allowing for dynamic theme customization without requiring an application rebuild:
-
-app.config.ts
-
-export default defineAppConfig({
-  ui: {
-    colors: {
-      primary: 'blue',
-      neutral: 'zinc'
-    }
-  }
-})
-When configuring your theme colors, you must use either color names from the default Tailwind palette (like 'blue', 'green', etc.) or reference custom colors that you've previously defined in your CSS file.
-Extend colors
-You can add you own dynamic color aliases in your app.config.ts, you just have to make sure to define them in the ui.theme.colors option in your nuxt.config.ts file:
-
-app.config.ts
-
-export default defineAppConfig({
-  ui: {
-    colors: {
-      tertiary: 'indigo'
-    }
-  }
-})
-nuxt.config.ts
-
-export default defineNuxtConfig({
-  ui: {
-    theme: {
-      colors: [
-        'primary',
-        'secondary',
-        'tertiary',
-        'info',
-        'success',
-        'warning',
-        'error'
-      ]
-    }
-  }
-})
-CSS Variables
-Nuxt UI leverages a robust system of CSS variables as design tokens to ensure consistent and flexible component styling. These tokens form the foundation of the theming system, offering smooth support for both light and dark modes.
-
-Colors
-Nuxt UI provides a CSS variable for each color alias you define which represent the default shade used in both light and dark modes:
-
-
-Light
-
-Dark
-
+/* Map to Nuxt UI system */
 :root {
-  --ui-primary: var(--ui-color-primary-500);
-  --ui-secondary: var(--ui-color-secondary-500);
-  --ui-success: var(--ui-color-success-500);
-  --ui-info: var(--ui-color-info-500);
-  --ui-warning: var(--ui-color-warning-500);
-  --ui-error: var(--ui-color-error-500);
+  --ui-primary: var(--color-site-gold-500);
+  --ui-bg: var(--color-site-black);
+  --ui-text: var(--color-site-gold-100);
 }
-These CSS variables are defined in Tailwind CSS's @theme so you can use them as classes:
+```
 
-PrimarySecondarySuccessInfoWarningError
-
-
-<template>
-  <span class="text-primary">Primary</span>
-  <span class="text-secondary">Secondary</span>
-  <span class="text-success">Success</span>
-  <span class="text-info">Info</span>
-  <span class="text-warning">Warning</span>
-  <span class="text-error">Error</span>
-</template>
-This is how the @theme is generated for each color alias:
-
-@theme default {
-  --color-primary: var(--ui-primary);
-  --color-primary-50: var(--ui-color-primary-50);
-  --color-primary-100: var(--ui-color-primary-100);
-  --color-primary-200: var(--ui-color-primary-200);
-  --color-primary-300: var(--ui-color-primary-300);
-  --color-primary-400: var(--ui-color-primary-400);
-  --color-primary-500: var(--ui-color-primary-500);
-  --color-primary-600: var(--ui-color-primary-600);
-  --color-primary-700: var(--ui-color-primary-700);
-  --color-primary-800: var(--ui-color-primary-800);
-  --color-primary-900: var(--ui-color-primary-900);
-  --color-primary-950: var(--ui-color-primary-950);
-  --color-secondary: var(--ui-secondary);
-  --color-secondary-50: var(--ui-color-secondary-50);
-  --color-secondary-100: var(--ui-color-secondary-100);
-  --color-secondary-200: var(--ui-color-secondary-200);
-  --color-secondary-300: var(--ui-color-secondary-300);
-  --color-secondary-400: var(--ui-color-secondary-400);
-  --color-secondary-500: var(--ui-color-secondary-500);
-  --color-secondary-600: var(--ui-color-secondary-600);
-  --color-secondary-700: var(--ui-color-secondary-700);
-  --color-secondary-800: var(--ui-color-secondary-800);
-  --color-secondary-900: var(--ui-color-secondary-900);
-  --color-secondary-950: var(--ui-color-secondary-950);
-  --color-success: var(--ui-success);
-  --color-success-50: var(--ui-color-success-50);
-  --color-success-100: var(--ui-color-success-100);
-  --color-success-200: var(--ui-color-success-200);
-  --color-success-300: var(--ui-color-success-300);
-  --color-success-400: var(--ui-color-success-400);
-  --color-success-500: var(--ui-color-success-500);
-  --color-success-600: var(--ui-color-success-600);
-  --color-success-700: var(--ui-color-success-700);
-  --color-success-800: var(--ui-color-success-800);
-  --color-success-900: var(--ui-color-success-900);
-  --color-success-950: var(--ui-color-success-950);
-  --color-info: var(--ui-info);
-  --color-info-50: var(--ui-color-info-50);
-  --color-info-100: var(--ui-color-info-100);
-  --color-info-200: var(--ui-color-info-200);
-  --color-info-300: var(--ui-color-info-300);
-  --color-info-400: var(--ui-color-info-400);
-  --color-info-500: var(--ui-color-info-500);
-  --color-info-600: var(--ui-color-info-600);
-  --color-info-700: var(--ui-color-info-700);
-  --color-info-800: var(--ui-color-info-800);
-  --color-info-900: var(--ui-color-info-900);
-  --color-info-950: var(--ui-color-info-950);
-  --color-warning: var(--ui-warning);
-  --color-warning-50: var(--ui-color-warning-50);
-  --color-warning-100: var(--ui-color-warning-100);
-  --color-warning-200: var(--ui-color-warning-200);
-  --color-warning-300: var(--ui-color-warning-300);
-  --color-warning-400: var(--ui-color-warning-400);
-  --color-warning-500: var(--ui-color-warning-500);
-  --color-warning-600: var(--ui-color-warning-600);
-  --color-warning-700: var(--ui-color-warning-700);
-  --color-warning-800: var(--ui-color-warning-800);
-  --color-warning-900: var(--ui-color-warning-900);
-  --color-warning-950: var(--ui-color-warning-950);
-  --color-error: var(--ui-error);
-  --color-error-50: var(--ui-color-error-50);
-  --color-error-100: var(--ui-color-error-100);
-  --color-error-200: var(--ui-color-error-200);
-  --color-error-300: var(--ui-color-error-300);
-  --color-error-400: var(--ui-color-error-400);
-  --color-error-500: var(--ui-color-error-500);
-  --color-error-600: var(--ui-color-error-600);
-  --color-error-700: var(--ui-color-error-700);
-  --color-error-800: var(--ui-color-error-800);
-  --color-error-900: var(--ui-color-error-900);
-  --color-error-950: var(--ui-color-error-950);
-  --color-neutral-50: var(--ui-color-neutral-50);
-  --color-neutral-100: var(--ui-color-neutral-100);
-  --color-neutral-200: var(--ui-color-neutral-200);
-  --color-neutral-300: var(--ui-color-neutral-300);
-  --color-neutral-400: var(--ui-color-neutral-400);
-  --color-neutral-500: var(--ui-color-neutral-500);
-  --color-neutral-600: var(--ui-color-neutral-600);
-  --color-neutral-700: var(--ui-color-neutral-700);
-  --color-neutral-800: var(--ui-color-neutral-800);
-  --color-neutral-900: var(--ui-color-neutral-900);
-  --color-neutral-950: var(--ui-color-neutral-950);
+#### Component Variants
+Use CSS variables and Tailwind classes to create consistent variants:
+```css
+.base-button-primary {
+  background-color: var(--color-site-gold-500);
+  color: var(--color-black);
 }
-
-Expand code
-You can change which shade is used for each color on light and dark mode in your main.css file:
-
-app/assets/css/main.css
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-
-:root {
-  --ui-primary: var(--ui-color-primary-700);
-}
-
-.dark {
-  --ui-primary: var(--ui-color-primary-200);
-}
-You cannot set primary: 'black' in your app.config.ts because this color has no shade, instead you can override the primary color in your main.css file to create a black & white theme:
-
-app/assets/css/main.css
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-
-:root {
-  --ui-primary: black;
-}
-
-.dark {
-  --ui-primary: white;
-}
-Neutral
-Nuxt UI provides a comprehensive set of design tokens for the neutral color palette, ensuring consistent and accessible UI styling across both light and dark modes. These tokens offer fine-grained control over text, background, and border colors:
-
-
-Light
-
-Dark
-
-:root {
-  --ui-text-dimmed: var(--ui-color-neutral-400);
-  --ui-text-muted: var(--ui-color-neutral-500);
-  --ui-text-toned: var(--ui-color-neutral-600);
-  --ui-text: var(--ui-color-neutral-700);
-  --ui-text-highlighted: var(--ui-color-neutral-900);
-  --ui-text-inverted: var(--color-white);
-
-  --ui-bg: var(--color-white);
-  --ui-bg-muted: var(--ui-color-neutral-50);
-  --ui-bg-elevated: var(--ui-color-neutral-100);
-  --ui-bg-accented: var(--ui-color-neutral-200);
-  --ui-bg-inverted: var(--ui-color-neutral-900);
-
-  --ui-border: var(--ui-color-neutral-200);
-  --ui-border-muted: var(--ui-color-neutral-200);
-  --ui-border-accented: var(--ui-color-neutral-300);
-  --ui-border-inverted: var(--ui-color-neutral-900);
-}
-These CSS variables are defined in Tailwind CSS's @theme so you can use them as classes:
-
-DimmedMutedTonedTextHighlightedInverted
-
-
-<template>
-  <span class="text-dimmed">Dimmed</span>
-  <span class="text-muted">Muted</span>
-  <span class="text-toned">Toned</span>
-  <span class="text-default">Text</span>
-  <span class="text-highlighted">Highlighted</span>
-  <span class="text-inverted bg-inverted">Inverted</span>
-</template>
-DefaultMutedElevatedAccentedInverted
-
-
-<template>
-  <div class="bg-default">Default</div>
-  <div class="bg-muted">Muted</div>
-  <div class="bg-elevated">Elevated</div>
-  <div class="bg-accented">Accented</div>
-  <div class="bg-inverted text-inverted">Inverted</div>
-</template>
-DefaultMutedAccentedInverted
-
-
-<template>
-  <div class="border border-default">Default</div>
-  <div class="border border-muted">Muted</div>
-  <div class="border border-accented">Accented</div>
-  <div class="border border-inverted">Inverted</div>
-</template>
-This is how the @theme is generated for each design token:
-
-@theme default {
-  --text-color-dimmed: var(--ui-text-dimmed);
-  --text-color-muted: var(--ui-text-muted);
-  --text-color-toned: var(--ui-text-toned);
-  --text-color-default: var(--ui-text);
-  --text-color-highlighted: var(--ui-text-highlighted);
-  --text-color-inverted: var(--ui-text-inverted);
-  --background-color-default: var(--ui-bg);
-  --background-color-muted: var(--ui-bg-muted);
-  --background-color-elevated: var(--ui-bg-elevated);
-  --background-color-accented: var(--ui-bg-accented);
-  --background-color-inverted: var(--ui-bg-inverted);
-  --background-color-border: var(--ui-border);
-  --border-color-default: var(--ui-border);
-  --border-color-muted: var(--ui-border-muted);
-  --border-color-accented: var(--ui-border-accented);
-  --border-color-inverted: var(--ui-border-inverted);
-  --border-color-bg: var(--ui-bg);
-  --ring-color-default: var(--ui-border);
-  --ring-color-muted: var(--ui-border-muted);
-  --ring-color-accented: var(--ui-border-accented);
-  --ring-color-inverted: var(--ui-border-inverted);
-  --ring-color-bg: var(--ui-bg);
-  --ring-offset-color-default: var(--ui-border);
-  --ring-offset-color-muted: var(--ui-border-muted);
-  --ring-offset-color-accented: var(--ui-border-accented);
-  --ring-offset-color-inverted: var(--ui-border-inverted);
-  --ring-offset-color-bg: var(--ui-bg);
-  --divide-color-default: var(--ui-border);
-  --divide-color-muted: var(--ui-border-muted);
-  --divide-color-accented: var(--ui-border-accented);
-  --divide-color-inverted: var(--ui-border-inverted);
-  --divide-color-bg: var(--ui-bg);
-  --outline-color-default: var(--ui-border);
-  --outline-color-inverted: var(--ui-border-inverted);
-  --stroke-color-default: var(--ui-border);
-  --stroke-color-inverted: var(--ui-border-inverted);
-  --fill-color-default: var(--ui-border);
-  --fill-color-inverted: var(--ui-border-inverted);
-}
-
-Expand code
-You can customize these CSS variables to tailor the appearance of your application in your main.css file:
-
-app/assets/css/main.css
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-
-:root {
-  --ui-bg: var(--ui-color-neutral-50);
-  --ui-text: var(--ui-color-neutral-900);
-}
-
-.dark {
-  --ui-bg: var(--ui-color-neutral-950);
-  --ui-border: var(--ui-color-neutral-900);
-}
-Nuxt UI applies a text and background color on the <body> element of your app:
-
-body {
-  @apply antialiased text-default bg-default scheme-light dark:scheme-dark;
-}
-Radius
-Nuxt UI provides a centralized border radius system through the --ui-radius CSS variable.
-
-
-:root {
-  --ui-radius: 0.25rem;
-}
-This CSS variable replaces Tailwind CSS's default rounded-* utilities so you can use the same class names:
-
-xssmmdlgxl2xl3xl
-
-
-<template>
-  <div class="rounded-xs">xs</div>
-  <div class="rounded-sm">sm</div>
-  <div class="rounded-md">md</div>
-  <div class="rounded-lg">lg</div>
-  <div class="rounded-xl">xl</div>
-  <div class="rounded-2xl">2xl</div>
-  <div class="rounded-3xl">3xl</div>
-</template>
-This is how the @theme is generated for each radius value:
-
-@theme default {
-  --radius-xs: calc(var(--ui-radius) * 0.5);    /* 0.125rem */
-  --radius-sm: var(--ui-radius);                /* 0.25rem */
-  --radius-md: calc(var(--ui-radius) * 1.5);    /* 0.375rem */
-  --radius-lg: calc(var(--ui-radius) * 2);      /* 0.5rem */
-  --radius-xl: calc(var(--ui-radius) * 3);      /* 0.75rem */
-  --radius-2xl: calc(var(--ui-radius) * 4);     /* 1rem */
-  --radius-3xl: calc(var(--ui-radius) * 6);     /* 1.5rem */
-}
-
-Expand code
-You can customize the base radius value in your main.css file:
-
-app/assets/css/main.css
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-
-:root {
-  --ui-radius: 0.5rem;
-}
-Try the  theme picker in the header above to change the base radius value.
-Container
-Nuxt UI provides a --ui-container CSS variable that controls the maximum width of the Container component.
-
-
-:root {
-  --ui-container: var(--container-7xl);
-}
-You can customize this value in your main.css file to adjust container widths consistently throughout your application:
-
-app/assets/css/main.css
-
-@import "tailwindcss";
-@import "@nuxt/ui";
-
-@theme {
-  --container-8xl: 90rem;
-}
-
-:root {
-  --ui-container: var(--container-8xl);
-}
-Components theme
-Nuxt UI components are styled using the Tailwind Variants API, which provides a powerful way to create variants and manage component styles. Let's explore the key features of this API:
-
-Slots
-Components in Nuxt UI can have multiple slots, each representing a distinct HTML element or section within the component. These slots allow for flexible content insertion and styling. Let's take the Card component as an example:
-
-
-src/theme/card.ts
-
-src/runtime/components/Card.vue
-
-export default {
-  slots: {
-    root: 'bg-default ring ring-default divide-y divide-default rounded-lg',
-    header: 'p-4 sm:px-6',
-    body: 'p-4 sm:p-6',
-    footer: 'p-4 sm:px-6'
-  }
-}
-Some components don't have slots, they are just composed of a single root element. In this case, the theme only defines the base slot like the Container component for example:
-
-
-src/theme/container.ts
-
-src/runtime/components/Container.vue
-
-export default {
-  base: 'max-w-(--ui-container) mx-auto px-4 sm:px-6 lg:px-8'
-}
-Components without slots don't have a ui prop, only the class prop is available to override styles.
-Variants
-Nuxt UI components use variants to change the slots styles based on props. Here's an example of the Avatar component:
-
-src/theme/avatar.ts
-
-export default {
-  slots: {
-    root: 'inline-flex items-center justify-center shrink-0 select-none overflow-hidden rounded-full align-middle bg-elevated',
-    image: 'h-full w-full rounded-[inherit] object-cover'
-  },
-  variants: {
-    size: {
-      sm: {
-        root: 'size-7 text-sm'
-      },
-      md: {
-        root: 'size-8 text-base'
-      },
-      lg: {
-        root: 'size-9 text-lg'
-      }
-    }
-  },
-  defaultVariants: {
-    size: 'md'
-  }
-}
-This way, the size prop will apply the corresponding styles to the root slot:
-
-size
-
-lg
-
-<template>
-  <UAvatar src="https://github.com/nuxt.png" size="lg" />
-</template>
-The defaultVariants property specifies the default values for each variant. It determines how a component looks and behaves when no prop is provided.
-
-These default values can be customized in your app.config.ts to adjust the standard appearance of components throughout your application.
-Customize theme
-You have multiple ways to customize the appearance of Nuxt UI components, you can do it for all components at once or on a per-component basis.
-
-Tailwind Variants uses tailwind-merge under the hood to merge classes so you don't have to worry about conflicting classes.
-You can explore the theme for each component in two ways:
-Check the Theme section in the documentation of each individual component.
-Browse the source code directly in the GitHub repository at v3/src/theme.
-Config
-You can override the theme of components globally inside your app.config.ts by using the exact same structure as the theme object.
-
-Let's say you want to change the font weight of all your buttons, you can do it like this:
-
-app.config.ts
-
-export default defineAppConfig({
-  ui: {
-    button: {
-      slots: {
-        base: 'font-bold'
-      }
-    }
-  }
-})
-In this example, the font-bold class will override the default font-medium class on all buttons.
-Props
-ui prop
-You can also override a component's slots using the ui prop. This has priority over the global configuration and variants resolution.
-
-trailingIcon
-i-lucide-chevron-right
-Button
-
-<template>
-  <UButton
-    trailing-icon="i-lucide-chevron-right"
-    size="md"
-    color="neutral"
-    variant="outline"
-    :ui="{
-      trailingIcon: 'rotate-90 size-3'
-    }"
-  >
-    Button
-  </UButton>
-</template>
-In this example, the trailingIcon slot is overwritten with size-3 even though the md size variant would apply a size-5 class to it.
-class prop
-The class prop allows you to override the classes of the root or base slot. This has priority over the global configuration and variants resolution.
-
-class
-font-bold rounded-full
-Button
-
-<template>
-  <UButton class="font-bold rounded-full">Button</UButton>
-</template>
-
-
-
-
-
-
+```
+
+### 5. Best Practices
+
+#### Component Development
+1. **Start with props**: Define all possible variants as props
+2. **Use computed properties**: Map props to CSS classes
+3. **Encapsulate styling**: Keep all component styles within the component
+4. **Provide defaults**: Set sensible default values for all props
+
+#### Styling Approach
+1. **Tailwind first**: Use utility classes whenever possible
+2. **CSS variables**: For design tokens and theme consistency
+3. **Component-scoped**: Keep styles close to components
+4. **Global utilities**: Only for truly global patterns
+
+#### File Organization
+```
+app/
+├── components/
+│   ├── Base/           # Atomic design components
+│   │   ├── Button.vue
+│   │   ├── Input.vue
+│   │   └── Card.vue
+│   ├── Contact/        # Feature-specific components
+│   │   ├── Form.vue
+│   │   ├── Details.vue
+│   │   └── Header.vue
+│   └── Album/          # Domain-specific components
+├── assets/css/
+│   └── main.css        # Global styles and design tokens
+└── pages/
+```
+
+### 6. Development Workflow
+
+#### Creating New Components
+1. **Base Components**: Start with props interface, add styling variants
+2. **Feature Components**: Compose base components, add business logic
+3. **Global Styles**: Add new design tokens to main.css if needed
+
+#### Styling New Features
+1. Check if existing base components can be used
+2. If not, create new base component with proper props
+3. Use Tailwind classes with CSS variables for consistency
+4. Test all variants and states
+
+### 7. Migration from Legacy Projects
+
+When migrating from older projects (like Nuxt 2 with Bulma):
+1. **Audit existing styles**: Identify reusable patterns
+2. **Create base components**: Convert common patterns to components
+3. **Define design tokens**: Extract colors, spacing, typography
+4. **Gradual migration**: Replace old components one by one
+5. **Maintain consistency**: Use the same props and patterns across components
+
+### 8. Future-Proofing
+
+This approach ensures:
+- **Consistency**: All components follow the same patterns
+- **Maintainability**: Changes to design tokens affect all components
+- **Reusability**: Base components work across different features
+- **Scalability**: Easy to add new variants and components
+- **Developer Experience**: Clear props and predictable behavior
+
+---
+
+## Project-Specific Information
+
+### About This Project
+This is a portfolio website for actor and model Benjamin Gijzel, showcasing his work in acting, modeling, and art.
+
+### Key Features
+- **Dynamic Mosaic Homepage**: Visual grid layout showcasing different portfolio categories
+- **Album Galleries**: Interactive image galleries with lightbox viewing
+- **Contact Form**: Netlify Forms integration for easy communication
+- **Responsive Design**: Mobile-first approach with smooth animations
+
+### Migration Notes
+This project is a migration from a Nuxt 2 project that used:
+- Bulma CSS framework
+- Buefy UI components
+- Vuex for state management
+
+### Current Status
+- ✅ Contact form migrated to Netlify Forms
+- ✅ Base components created with prop-driven styling
+- ✅ CSS cleaned up and organized
+- ✅ Build process working
+- 🔄 Mosaic layout needs dynamic CMS integration
+- 🔄 Album galleries need enhanced UX
+- 🔄 Navigation needs modernization

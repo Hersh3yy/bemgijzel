@@ -363,23 +363,30 @@ watch(() => route.path, () => {
 }
 
 @media (max-width: 768px) {
+  .navbar-container {
+    border-bottom: 2px solid var(--color-site-gold-700);
+  }
+  
   .navbar-content {
-    padding: 0.75rem 1rem;
+    padding: 1rem;
+    min-height: 5rem;
   }
   
   .navbar-logo {
-    height: 40px;
-    max-height: 40px;
-    min-width: 40px;
+    height: 60px;
+    max-height: 60px;
+    min-width: 60px;
   }
   
   .brand-section {
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
   
   .mobile-menu-btn {
-    min-width: 40px !important;
-    min-height: 40px !important;
+    min-width: 56px !important;
+    min-height: 56px !important;
+    font-size: 1.5rem !important;
+    border: 2px solid var(--color-site-gold-700) !important;
   }
 }
 
@@ -485,7 +492,11 @@ watch(() => route.path, () => {
   }
   
   .mobile-only {
-    display: none;
+    display: none !important;
+  }
+  
+  .mobile-only.mobile-button {
+    display: none !important;
   }
 }
 

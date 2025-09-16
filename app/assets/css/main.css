@@ -91,267 +91,98 @@ a:hover {
   color: var(--color-site-gold-300);
 }
 
-/* Image overlay styles */
+/* Image overlay styles - moved to MediaItem component */
 .image-container {
   @apply relative;
-}
-
-.middle-overlay {
-  @apply absolute inset-0 bg-black/70 opacity-0 transition-opacity duration-300 flex items-center justify-center;
-}
-
-.middle-overlay-text {
-  @apply text-white font-bold;
-}
-
-.image-container:hover .middle-overlay {
-  @apply opacity-100;
 }
 
 .image-container:hover img {
   @apply opacity-80;
 }
 
-/* Design System - Component Classes */
-
-/* Video Overlay Components */
-.video-overlay-base {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.video-overlay-interactive {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.video-overlay-interactive:hover {
-  background: gray;
-}
-
-.video-overlay-hover-only {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.video-overlay-hover-only:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.video-overlay-static {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--overlay-medium);
-  transition: all 0.3s ease;
-}
-
-/* Play Button Components */
-.play-icon-base {
-  color: white;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-}
-
-.play-icon-small {
-  color: white;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-  font-size: 2.25rem; /* text-4xl */
-}
-
-.play-icon-medium {
-  color: white;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-  font-size: 3.75rem; /* text-6xl */
-}
-
-.play-icon-large {
-  color: white;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-  font-size: 5rem; /* text-8xl */
-}
-
-.play-icon-subtle {
-  color: white;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-  font-size: 3.75rem; /* text-6xl */
-  opacity: 0.8;
-}
-
 /* Text Badge Components */
 .text-badge-base {
-  color: white;
-  font-weight: bold;
+  @apply text-white font-bold;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  transition: opacity 0.3s ease;
+  @apply transition-opacity duration-300;
 }
 
 .text-badge-banner {
-  position: absolute;
+  @apply absolute text-white font-bold text-xl px-6 py-4 text-center transition-opacity duration-300 z-10;
   top: 50%;
   left: 0;
   right: 0;
-  transform: translateY(-50%);
-  background: var(--overlay-dark);
-  color: white;
-  font-weight: bold;
-  font-size: 1.25rem; /* text-xl */
-  padding: 1rem 1.5rem;
-  text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.6);
   opacity: 0.8;
-  transition: opacity 0.3s ease;
-  z-index: 10;
+  transform: translateY(-50%);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .text-badge-banner:hover {
-  opacity: 1;
+  @apply opacity-100;
 }
 
 .text-badge-overlay {
-  color: white;
-  font-weight: bold;
-  font-size: 1.25rem; /* text-xl */
+  @apply text-white font-bold text-xl transition-opacity duration-300;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  transition: opacity 0.3s ease;
 }
 
 /* Modal Components */
 .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @apply fixed inset-0 z-50 flex items-center justify-center;
   background: var(--overlay-heavy);
 }
 
 /* Navigation Components */
 .nav-button {
-  position: absolute;
-  color: white;
-  z-index: 10;
-  transition: color 0.3s ease;
+  @apply absolute text-white z-10 transition-colors duration-300;
 }
 
 .nav-button:hover {
-  color: #d1d5db; /* gray-300 */
+  @apply text-gray-300;
 }
 
 .nav-button-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: white;
-  z-index: 10;
-  transition: color 0.3s ease;
+  @apply absolute top-4 right-4 text-white z-10 transition-colors duration-300;
 }
 
 .nav-button-close:hover {
-  color: #d1d5db; /* gray-300 */
+  @apply text-gray-300;
 }
 
 .nav-button-prev {
-  position: absolute;
-  left: 1rem;
-  color: white;
-  z-index: 10;
-  transition: color 0.3s ease;
+  @apply absolute left-4 text-white z-10 transition-colors duration-300;
 }
 
 .nav-button-prev:hover {
-  color: #d1d5db; /* gray-300 */
+  @apply text-gray-300;
 }
 
 .nav-button-next {
-  position: absolute;
-  right: 1rem;
-  color: white;
-  z-index: 10;
-  transition: color 0.3s ease;
+  @apply absolute right-4 text-white z-10 transition-colors duration-300;
 }
 
 .nav-button-next:hover {
-  color: #d1d5db; /* gray-300 */
+  @apply text-gray-300;
 }
 
 /* Image Container Components */
 .image-container-base {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
+  @apply relative overflow-hidden cursor-pointer;
 }
 
 .image-container-card {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 0.5rem;
+  @apply relative overflow-hidden cursor-pointer rounded-lg;
 }
 
 .image-container-mosaic {
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  border-radius: 0.5rem;
-  min-height: 150px;
+  @apply relative overflow-hidden cursor-pointer rounded-lg min-h-[150px];
 }
 
 /* Utility Classes */
 .aspect-video-responsive {
-  width: 100%;
-  max-width: 56rem; /* max-w-4xl */
+  @apply w-full max-w-4xl;
   aspect-ratio: 16 / 9;
-}
-
-.image-responsive {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: all 0.3s ease;
-}
-
-.image-hover-darken:hover {
-  opacity: 0.9;
-}
-
-/* Legacy overlay styles for backward compatibility */
-.middle-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.image-container:hover .middle-overlay {
-  opacity: 1;
-}
-
-.middle-overlay-text {
-  color: white;
-  text-align: center;
-  padding: 1rem;
 }
 
 /* Global utility classes for common patterns */
@@ -385,7 +216,9 @@ a:hover {
 
 /* Animation utilities */
 .fade-in {
-  animation: fadeIn 0.3s ease-in;
+  @apply opacity-0 transition-all duration-300;
+  transform: translateY(-10px);
+  animation: fadeIn 0.3s ease-in forwards;
 }
 
 @keyframes fadeIn {
@@ -397,4 +230,21 @@ a:hover {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Global button styles to prevent flash of unstyled content */
+.base-button,
+.base-button-primary {
+  @apply bg-gold-500 text-black border-0 font-semibold min-h-[48px] min-w-[120px] visible opacity-100 inline-flex items-center justify-center transition-all duration-200;
+}
+
+.base-button:hover,
+.base-button-primary:hover {
+  @apply bg-gold-400;
+}
+
+.base-button:focus,
+.base-button-primary:focus {
+  @apply outline-none;
+  box-shadow: 0 0 0 2px var(--color-site-gold-500) !important;
 } 

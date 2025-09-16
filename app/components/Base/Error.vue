@@ -62,10 +62,11 @@ const iconClass = computed(() => {
 
 <style scoped>
 .error-container {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 0.5rem;
-  max-width: 32rem;
+  border: 1px solid;
   margin: 0 auto;
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  border-radius: 0.5rem;
+  max-width: 28rem;
 }
 </style>

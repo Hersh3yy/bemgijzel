@@ -154,7 +154,7 @@ const handleImageLoad = (event: Event) => {
 
 <style scoped>
 .media-item-container {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease-in-out;
 }
 
 .media-item-container:hover {
@@ -167,10 +167,10 @@ const handleImageLoad = (event: Event) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -184,5 +184,94 @@ const handleImageLoad = (event: Event) => {
   text-align: center;
   padding: 1rem;
   font-weight: 600;
+}
+
+/* Video overlay styles - moved from main.css */
+.video-overlay-interactive {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.video-overlay-interactive:hover {
+  background-color: #6b7280;
+}
+
+.video-overlay-hover-only {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.video-overlay-hover-only:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.video-overlay-static {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+/* Play icon styles - moved from main.css */
+.play-icon-base {
+  color: white;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.play-icon-small {
+  color: white;
+  font-size: 2.25rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.play-icon-medium {
+  color: white;
+  font-size: 3.75rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.play-icon-large {
+  color: white;
+  font-size: 5rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.play-icon-subtle {
+  color: white;
+  font-size: 3.75rem;
+  opacity: 0.8;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* Image responsive styles - moved from main.css */
+.image-responsive {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.image-hover-darken:hover {
+  opacity: 0.9;
 }
 </style>
