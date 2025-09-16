@@ -1,98 +1,135 @@
 <template>
-  <div class="page-container">
-    <div class="contact-layout">
+  <LayoutsPageContainer>
+    <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 lg:gap-12 items-start">
       <!-- Contact Information and Form Section -->
-      <div class="contact-content">
+      <div class="space-y-6">
         <!-- Contact Details Card -->
-        <UCard class="contact-details-card mb-6">
+        <UCard class="bg-site-black border-gold-hover card-hover-effect">
           <div class="p-4">
-            <div class="contact-info-text" :style="{ color: 'var(--color-site-gold-100)' }">
-              <p class="mb-2">
-                <strong :style="{ color: 'var(--color-site-gold-500)' }">Location:</strong> NL Amsterdam
+            <div class="text-gold-secondary space-y-2">
+              <p>
+                <strong class="text-gold-primary">Location:</strong> NL Amsterdam
               </p>
-              <p class="mb-2">
-                <strong :style="{ color: 'var(--color-site-gold-500)' }">Phone (NL):</strong> + 31 (0)6 2897 2693
+              <p>
+                <strong class="text-gold-primary">Phone (NL):</strong> + 31 (0)6 2897 2693
               </p>
-              <p class="mb-2">
-                <strong :style="{ color: 'var(--color-site-gold-500)' }">Phone (DE):</strong> + 49 (0)2054 871 557
+              <p>
+                <strong class="text-gold-primary">Phone (DE):</strong> + 49 (0)2054 871 557
               </p>
-              <p class="mb-2">
-                <strong :style="{ color: 'var(--color-site-gold-500)' }">KvK:</strong> A'dam 34274244
+              <p>
+                <strong class="text-gold-primary">KvK:</strong> A'dam 34274244
               </p>
             </div>
           </div>
         </UCard>
 
         <!-- Contact Form Card -->
-        <UCard class="contact-form-card">
+        <UCard class="bg-site-black border-gold-hover card-hover-effect">
           <template #header>
-            <p class="card-header-title text-lg font-semibold" :style="{ color: 'var(--color-site-gold-500)' }">
+            <p class="text-lg font-semibold text-gold-primary">
               Send me a message.
             </p>
           </template>
 
           <div class="p-4 space-y-4">
+            <!-- Success Message -->
+            <div v-if="showSuccess" class="fade-in p-4 rounded-lg border border-green-500 bg-green-500/10">
+              <div class="flex items-center">
+                <UIcon name="i-heroicons-check-circle" class="text-green-500 text-xl mr-3" />
+                <p class="text-green-400 font-medium">
+                  Email sent successfully! Benjamin will get back to you soon.
+                </p>
+              </div>
+            </div>
+
+            <!-- General Error Message -->
+            <div v-if="errorMessage" class="fade-in p-4 rounded-lg border border-red-500 bg-red-500/10">
+              <div class="flex items-center">
+                <UIcon name="i-heroicons-exclamation-triangle" class="text-red-500 text-xl mr-3" />
+                <p class="text-red-400 font-medium">
+                  {{ errorMessage }}
+                </p>
+              </div>
+            </div>
             <div>
-              <label class="block font-semibold mb-2" :style="{ color: 'var(--color-site-gold-100)' }">Your name</label>
+              <label class="block font-semibold mb-2 text-gold-secondary">Your name</label>
               <UInput 
                 v-model="formData.name"
                 type="text" 
                 autocomplete="on"
-                class="w-full"
+                :class="['w-full', fieldErrors.name && 'border-red-500']"
+                placeholder="Enter your full name"
               />
+              <div v-if="fieldErrors.name" class="mt-1">
+                <p class="text-red-400 text-sm">{{ fieldErrors.name }}</p>
+              </div>
             </div>
 
             <div>
-              <label class="block font-semibold mb-2" :style="{ color: 'var(--color-site-gold-100)' }">Your e-mail</label>
+              <label class="block font-semibold mb-2 text-gold-secondary">Your e-mail</label>
               <UInput 
                 v-model="formData.email"
                 type="email" 
                 autocomplete="on"
                 maxlength="50"
-                class="w-full"
+                :class="['w-full', fieldErrors.email && 'border-red-500']"
+                placeholder="your.email@example.com"
               />
-              <small class="text-xs opacity-60" :style="{ color: 'var(--color-site-gold-300)' }">
-                {{ formData.email.length }} / 50
-              </small>
+              <div class="flex justify-between items-center mt-1">
+                <div v-if="fieldErrors.email">
+                  <p class="text-red-400 text-sm">{{ fieldErrors.email }}</p>
+                </div>
+                <small class="text-xs opacity-60 text-gold-300">
+                  {{ formData.email.length }} / 50
+                </small>
+              </div>
             </div>
 
             <div>
-              <label class="block font-semibold mb-2" :style="{ color: 'var(--color-site-gold-100)' }">Message</label>
+              <label class="block font-semibold mb-2 text-gold-secondary">Message</label>
               <UTextarea 
                 v-model="formData.message"
-                maxlength="200"
+                maxlength="500"
                 :rows="4"
-                class="w-full"
+                :class="['w-full', fieldErrors.message && 'border-red-500']"
+                placeholder="Tell Benjamin about your project or inquiry..."
               />
-              <small class="text-xs opacity-60" :style="{ color: 'var(--color-site-gold-300)' }">
-                {{ formData.message.length }} / 200
-              </small>
+              <div class="flex justify-between items-center mt-1">
+                <div v-if="fieldErrors.message">
+                  <p class="text-red-400 text-sm">{{ fieldErrors.message }}</p>
+                </div>
+                <small class="text-xs opacity-60 text-gold-300">
+                  {{ formData.message.length }} / 500
+                </small>
+              </div>
             </div>
           </div>
 
           <template #footer>
             <div class="flex justify-center w-full">
-              <UButton 
+              <BaseButton 
                 @click="sendEmail"
                 :loading="isSending"
                 :disabled="!isFormValid"
                 size="lg"
+                variant="primary"
                 class="send-email-btn"
               >
-                <span>Send Email</span>
-              </UButton>
+                Send Email
+              </BaseButton>
             </div>
           </template>
         </UCard>
       </div>
 
       <!-- Image Section -->
-      <div class="contact-image">
-        <figure class="image-container">
+      <div class="lg:sticky lg:top-8">
+        <figure class="relative w-full">
           <img 
             src="/by-the-water.jpg" 
             alt="Benjamin Gijzel by the water - Contact"
-            class="contact-photo"
+            class="w-full h-auto object-contain object-center rounded-lg shadow-2xl transition-transform duration-300 hover:scale-105"
+            style="max-height: 60vh; min-height: 300px;"
           />
         </figure>
       </div>
@@ -100,13 +137,12 @@
 
     <!-- Back to Home Button -->
     <div class="flex justify-center mt-8">
-      <UButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" color="primary" />
+      <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" />
     </div>
-  </div>
+  </LayoutsPageContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { logger } from '~/utils/logger'
 
 useHead({
@@ -123,17 +159,29 @@ const formData = ref({
 })
 
 const isSending = ref(false)
+const showSuccess = ref(false)
+const errorMessage = ref('')
+const fieldErrors = ref<Record<string, string>>({})
 
 const isFormValid = computed(() => {
-  return formData.value.name.trim() !== '' && 
-         formData.value.email.trim() !== '' && 
-         formData.value.message.trim() !== '' &&
-         formData.value.email.includes('@')
+  const nameValid = formData.value.name.trim().length >= 1
+  const emailValid = formData.value.email.trim().length >= 5 && 
+                    /^[\w.-]+@[\w.-]+\.\w+$/.test(formData.value.email.trim())
+  const messageValid = formData.value.message.trim().length >= 1
+  
+  return nameValid && emailValid && messageValid
 })
+
+const clearMessages = () => {
+  showSuccess.value = false
+  errorMessage.value = ''
+  fieldErrors.value = {}
+}
 
 const sendEmail = async () => {
   if (!isFormValid.value) return
   
+  clearMessages()
   isSending.value = true
   
   try {
@@ -157,136 +205,69 @@ const sendEmail = async () => {
         message: ''
       }
       
-      // Show success message (you can implement a toast/notification here)
-      alert('Email sent successfully! Benjamin will get back to you soon.')
+      // Show success message
+      showSuccess.value = true
+      logger.info('Contact form submitted successfully')
+      
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => {
+        showSuccess.value = false
+      }, 5000)
     } else {
-      throw new Error('Failed to send email')
+      throw new Error(response.message || 'Failed to send email')
     }
     
   } catch (error: any) {
     logger.error('Error sending email:', error)
     
-    // Show user-friendly error messages
+    // Handle different error types
     if (error.statusCode === 400) {
-      alert('Please check your input and try again.')
+      // Validation errors
+      if (error.data?.field) {
+        fieldErrors.value[error.data.field] = error.message || 'Invalid input'
+      } else if (error.data?.fields) {
+        // Multiple field errors
+        Object.entries(error.data.fields).forEach(([field, message]) => {
+          if (message) {
+            fieldErrors.value[field] = message as string
+          }
+        })
+      } else {
+        errorMessage.value = error.message || 'Please check your input and try again.'
+      }
     } else if (error.statusCode === 500) {
-      alert('Server error. Please try again later.')
+      errorMessage.value = 'Server error. Please try again later.'
+    } else if (error.statusCode === 405) {
+      errorMessage.value = 'Method not allowed. Please refresh and try again.'
     } else {
-      alert('Failed to send email. Please try again or contact directly.')
+      errorMessage.value = error.message || 'Failed to send email. Please try again or contact directly.'
     }
   } finally {
     isSending.value = false
   }
 }
+
+// Clear field errors when user starts typing
+watch(() => formData.value.name, () => {
+  if (fieldErrors.value.name) {
+    delete fieldErrors.value.name
+  }
+})
+
+watch(() => formData.value.email, () => {
+  if (fieldErrors.value.email) {
+    delete fieldErrors.value.email
+  }
+})
+
+watch(() => formData.value.message, () => {
+  if (fieldErrors.value.message) {
+    delete fieldErrors.value.message
+  }
+})
 </script>
 
 <style scoped>
-.page-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.contact-layout {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 3rem;
-  align-items: start;
-}
-
-.contact-content {
-  /* Left column content */
-}
-
-.contact-details-card,
-.contact-form-card {
-  background: var(--color-site-black);
-  border: 1px solid var(--color-site-gold-700);
-}
-
-.contact-details-card:hover,
-.contact-form-card:hover {
-  border-color: var(--color-site-gold-500);
-  box-shadow: 0 4px 12px rgba(196, 147, 38, 0.1);
-}
-
-.contact-image {
-  /* Right column image */
-  position: sticky;
-  top: 2rem;
-}
-
-.image-container {
-  width: 100%;
-  height: auto;
-}
-
-.contact-photo {
-  width: 100%;
-  height: auto;
-  min-height: 600px;
-  max-height: 80vh;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 0.5rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s ease;
-}
-
-.contact-photo:hover {
-  transform: scale(1.02);
-}
-
-.send-email-btn {
-  background-color: var(--color-site-black) !important;
-  color: var(--color-site-gold-500) !important;
-  border: 1px solid var(--color-site-gold-500) !important;
-  transition: all 0.3s ease !important;
-}
-
-.send-email-btn:hover {
-  background-color: var(--color-site-gold-500) !important;
-  color: var(--color-site-black) !important;
-}
-
-.send-email-btn:disabled {
-  opacity: 0.5 !important;
-  cursor: not-allowed !important;
-}
-
-/* Mobile responsive design */
-@media (max-width: 1024px) {
-  .contact-layout {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-  
-  .contact-image {
-    order: -1; /* Image goes to top on mobile */
-    position: static;
-  }
-  
-  .contact-photo {
-    min-height: 300px;
-    max-height: 50vh;
-  }
-}
-
-@media (max-width: 768px) {
-  .page-container {
-    padding: 1rem;
-  }
-  
-  .contact-layout {
-    gap: 1.5rem;
-  }
-  
-  .contact-photo {
-    min-height: 250px;
-    max-height: 40vh;
-  }
-}
-
 /* Form styling overrides */
 :deep(.input),
 :deep(.textarea) {
@@ -304,5 +285,14 @@ const sendEmail = async () => {
 :deep(.input::placeholder),
 :deep(.textarea::placeholder) {
   color: var(--color-site-gold-400) !important;
+}
+
+/* Ensure button is always visible and properly styled */
+.send-email-btn {
+  min-height: 48px !important;
+  min-width: 120px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
 }
 </style> 

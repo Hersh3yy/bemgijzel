@@ -352,4 +352,49 @@ a:hover {
   color: white;
   text-align: center;
   padding: 1rem;
+}
+
+/* Global utility classes for common patterns */
+.page-container-responsive {
+  @apply mx-auto max-w-7xl p-2 md:p-8;
+}
+
+.card-hover-effect {
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+}
+
+.border-gold {
+  @apply border border-gold-700;
+}
+
+.border-gold-hover {
+  @apply border-gold-700 hover:border-gold-500;
+}
+
+.text-gold-primary {
+  color: var(--color-site-gold-500);
+}
+
+.text-gold-secondary {
+  color: var(--color-site-gold-100);
+}
+
+.bg-site-black {
+  background-color: var(--color-site-black);
+}
+
+/* Animation utilities */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 } 

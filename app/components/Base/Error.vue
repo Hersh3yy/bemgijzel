@@ -17,11 +17,10 @@
     
     <div v-if="showRetry || $slots.actions" class="error-actions">
       <slot name="actions">
-        <UButton 
+        <BaseButton 
           v-if="showRetry"
           label="Try Again" 
           icon="i-heroicons-arrow-path" 
-          color="primary"
           variant="outline"
           @click="$emit('retry')"
         />
@@ -69,4 +68,4 @@ const iconClass = computed(() => {
   max-width: 32rem;
   margin: 0 auto;
 }
-</style> 
+</style>

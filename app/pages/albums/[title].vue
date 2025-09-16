@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <LayoutsPageContainer>
     <!-- Loading state -->
     <BaseLoading v-if="loading" message="Loading album..." />
 
@@ -10,70 +10,43 @@
       title="Failed to Load Album"
     >
       <template #actions>
-        <UButton label="Back to Albums" to="/albums" icon="i-heroicons-arrow-uturn-left" />
+        <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" />
       </template>
     </BaseError>
     
     <!-- Content -->
     <div v-else>
-      <UCard>
+      <UCard class="bg-site-black border-gold-hover">
         <template #header v-if="album">
-          <h1 class="text-2xl font-bold text-center" :style="{ color: 'var(--site-gold)' }">{{ album.title }}</h1>
-          <p v-if="album.description" class="text-center mt-2" :style="{ color: 'var(--ui-text)' }">{{ album.description }}</p>
+          <h1 class="text-2xl font-bold text-center text-gold-primary">{{ album.title }}</h1>
+          <p v-if="album.description" class="text-center mt-2 text-gold-secondary">{{ album.description }}</p>
         </template>
 
         <div class="p-4">
-          <!-- Empty state -->
-          <div v-if="!images || images.length === 0" class="text-center py-8">
-            <p :style="{ color: 'var(--ui-text)' }">No images found in this album.</p>
-            <UButton label="Back to Albums" to="/albums" icon="i-heroicons-arrow-uturn-left" class="mt-4" />
-          </div>
-
-          <!-- Images grid -->
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="image in images" :key="image.id" class="image-card">
-              <div class="image-container block rounded-lg overflow-hidden cursor-pointer" @click="handleItemClick(image)">
-                <!-- Video thumbnail with play button -->
-                <template v-if="isVideoItem(image)">
-                  <div class="relative w-full aspect-[4/3]">
-                    <img 
-                      :src="getVideoThumbnail(image)" 
-                      :alt="image.caption || 'Video thumbnail'" 
-                      class="image-responsive"
-                      @error="handleImageErrorWrapper($event, image)"
-                      @load="handleImageLoadWrapper($event, image)"
-                    />
-                    <div class="video-overlay-interactive">
-                      <UIcon name="i-heroicons-play" class="play-icon-small" />
-                    </div>
-                  </div>
-                </template>
-                
-                <!-- Regular image -->
-                <template v-else>
-                  <img 
-                    :src="image.thumbnail_url || image.path" 
-                    :alt="image.caption || 'Album image'" 
-                    class="w-full aspect-[4/3] object-cover image-hover-darken"
-                    @error="handleImageErrorWrapper($event, image)"
-                    @load="handleImageLoadWrapper($event, image)"
-                  />
-                </template>
-                
-                <div class="middle-overlay">
-                  <div class="middle-overlay-text">
-                    <p v-if="image.caption" class="text-sm">{{ image.caption }}</p>
-                    <p v-else-if="image.title" class="text-sm">{{ image.title }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <MoleculesImagesGrid
+            :images="images"
+            :columns="3"
+            aspect-ratio="square"
+            :show-captions="true"
+            :hover-effect="true"
+            play-button-style="interactive"
+            gap="md"
+            empty-message="No images found in this album."
+            :show-back-button="false"
+            item-class="image-card rounded-lg overflow-hidden card-hover-effect"
+            @item-click="handleItemClick"
+            @image-error="handleImageErrorWrapper"
+            @image-load="handleImageLoadWrapper"
+          >
+            <template #empty-actions>
+              <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" class="mt-4" />
+            </template>
+          </MoleculesImagesGrid>
         </div>
 
         <template #footer>
           <div class="flex justify-between">
-            <UButton label="Back to Albums" to="/albums" icon="i-heroicons-arrow-uturn-left" color="primary" />
+            <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" />
           </div>
         </template>
       </UCard>
@@ -86,7 +59,7 @@
         @close="closeFullscreen"
       />
     </div>
-  </div>
+  </LayoutsPageContainer>
 </template>
 
 <script setup lang="ts">
@@ -165,43 +138,5 @@ useHead({
 </script>
 
 <style scoped>
-.page-container {
-  padding: 2rem;
-}
-
-.image-card {
-  transition: transform 0.3s ease;
-}
-
-.image-card:hover {
-  transform: translateY(-5px);
-}
-
-.middle-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.image-container {
-  position: relative;
-}
-
-.image-container:hover .middle-overlay {
-  opacity: 1;
-}
-
-.middle-overlay-text {
-  color: white;
-  text-align: center;
-  padding: 1rem;
-}
+/* Custom styles if needed - most styling now handled by Tailwind classes */
 </style> 

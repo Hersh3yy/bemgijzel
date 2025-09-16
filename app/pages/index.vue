@@ -133,6 +133,12 @@ useHead({
   padding: 1rem;
 }
 
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0.5rem;
+  }
+}
+
 .site-container {
   min-height: 90vh; /* Ensure adequate height for mosaic */
 }

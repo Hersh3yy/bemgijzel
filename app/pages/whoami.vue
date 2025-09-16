@@ -54,7 +54,7 @@
 
       <template #footer>
         <div class="flex justify-center">
-          <UButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" color="primary" />
+          <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" />
         </div>
       </template>
     </UCard>
@@ -156,6 +156,12 @@ const iAmItems = [
 <style scoped>
 .page-container {
   padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0.5rem;
+  }
 }
 
 .collapse-item {

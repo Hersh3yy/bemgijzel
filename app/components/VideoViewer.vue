@@ -1,22 +1,22 @@
 <template>
   <div class="modal-backdrop" @click="close">
-    <div class="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center" @click.stop>
+    <div class="modal-container" @click.stop>
       <!-- Close button -->
       <button class="nav-button-close" @click="close">
-        <UIcon name="i-heroicons-x-mark" class="w-8 h-8" />
+        <UIcon name="i-heroicons-x-mark" class="w-6 h-6 md:w-8 md:h-8" />
       </button>
 
       <!-- Navigation buttons -->
       <button v-if="currentIndex > 0" class="nav-button-prev" @click.stop="previous">
-        <UIcon name="i-heroicons-chevron-left" class="w-8 h-8" />
+        <UIcon name="i-heroicons-chevron-left" class="w-6 h-6 md:w-8 md:h-8" />
       </button>
 
       <button v-if="currentIndex < videos.length - 1" class="nav-button-next" @click.stop="next">
-        <UIcon name="i-heroicons-chevron-right" class="w-8 h-8" />
+        <UIcon name="i-heroicons-chevron-right" class="w-6 h-6 md:w-8 md:h-8" />
       </button>
 
       <!-- Content Area -->
-      <div class="w-full h-full flex flex-col items-center justify-center">
+      <div class="modal-content">
         <!-- Video Player -->
         <div v-if="isPlayingVideo && currentVideo" class="aspect-video-responsive">
           <iframe
@@ -43,18 +43,18 @@
         </div>
 
         <!-- Caption/Title -->
-        <div v-if="currentVideo && (currentVideo.title || currentVideo.caption)" class="mt-4 text-center max-w-2xl">
-          <h3 v-if="currentVideo.title" class="text-xl font-semibold text-white mb-2">{{ currentVideo.title }}</h3>
-          <p v-if="currentVideo.caption" class="text-gray-300">{{ currentVideo.caption }}</p>
+        <div v-if="currentVideo && (currentVideo.title || currentVideo.caption)" class="modal-caption">
+          <h3 v-if="currentVideo.title" class="modal-title">{{ currentVideo.title }}</h3>
+          <p v-if="currentVideo.caption" class="modal-description">{{ currentVideo.caption }}</p>
         </div>
 
         <!-- Navigation indicators -->
-        <div v-if="videos.length > 1" class="flex items-center space-x-2 mt-4">
+        <div v-if="videos.length > 1" class="modal-indicators">
           <div 
             v-for="(_, index) in videos" 
             :key="index"
-            class="w-2 h-2 rounded-full transition-all duration-200"
-            :class="index === currentIndex ? 'bg-white' : 'bg-gray-500'"
+            class="modal-indicator"
+            :class="index === currentIndex ? 'modal-indicator-active' : 'modal-indicator-inactive'"
           ></div>
         </div>
       </div>
@@ -140,4 +140,189 @@ const handleKeyDown = (e: KeyboardEvent) => {
       break;
   }
 };
-</script> 
+</script>
+
+<style scoped>
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 0.5rem;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.modal-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.modal-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.aspect-video-responsive {
+  width: 100%;
+  max-width: 95vw;
+  aspect-ratio: 16 / 9;
+}
+
+.modal-caption {
+  text-align: center;
+  max-width: 90%;
+  padding: 0 1rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.modal-description {
+  color: #d1d5db;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.modal-indicators {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.modal-indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-indicator-active {
+  background-color: white;
+}
+
+.modal-indicator-inactive {
+  background-color: #6b7280;
+}
+
+.nav-button-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: white;
+  z-index: 10;
+  transition: color 0.3s ease;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-button-close:hover {
+  color: #d1d5db;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.nav-button-prev,
+.nav-button-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  z-index: 10;
+  transition: color 0.3s ease;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-button-prev {
+  left: 1rem;
+}
+
+.nav-button-next {
+  right: 1rem;
+}
+
+.nav-button-prev:hover,
+.nav-button-next:hover {
+  color: #d1d5db;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .modal-backdrop {
+    padding: 0.25rem;
+  }
+  
+  .modal-container {
+    max-width: 100vw;
+    max-height: 100vh;
+  }
+  
+  .aspect-video-responsive {
+    max-width: 95vw;
+    max-height: 70vh;
+  }
+  
+  .nav-button-close,
+  .nav-button-prev,
+  .nav-button-next {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  
+  .nav-button-prev {
+    left: 0.25rem;
+  }
+  
+  .nav-button-next {
+    right: 0.25rem;
+  }
+  
+  .modal-title {
+    font-size: 1rem;
+  }
+  
+  .modal-description {
+    font-size: 0.8rem;
+  }
+}
+</style> 

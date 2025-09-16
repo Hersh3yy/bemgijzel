@@ -1,73 +1,53 @@
 <template>
-  <div class="page-container">
+  <LayoutsPageContainer>
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center py-8">
-      <UIcon name="i-heroicons-arrow-path" class="animate-spin text-2xl" :style="{ color: 'var(--color-site-gold-500)' }" />
+      <UIcon name="i-heroicons-arrow-path" class="animate-spin text-2xl text-gold-primary" />
     </div>
 
     <!-- Error state -->
     <div v-else-if="error" class="text-center py-8">
-      <p :style="{ color: 'var(--color-site-gold-500)' }">{{ errorMessage }}</p>
-      <UButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" class="mt-4" />
+      <p class="text-gold-primary">{{ errorMessage }}</p>
+      <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" class="mt-4" />
     </div>
 
     <!-- Content -->
     <div v-else>
-      <UCard>
+      <UCard class="bg-site-black border-gold-hover">
         <template #header>
-          <h1 class="text-3xl font-bold text-center" :style="{ color: 'var(--color-site-gold-500)' }">Showreels</h1>
-          <p v-if="album && album.description" class="text-center mt-2" :style="{ color: 'var(--color-site-gold-100)' }">{{ album.description }}</p>
-          <p v-else class="text-center mt-2" :style="{ color: 'var(--color-site-gold-100)' }">View our collection of showreels and video highlights.</p>
+          <h1 class="text-3xl font-bold text-center text-gold-primary">Showreels</h1>
+          <p v-if="album && album.description" class="text-center mt-2 text-gold-secondary">{{ album.description }}</p>
+          <p v-else class="text-center mt-2 text-gold-secondary">View our collection of showreels and video highlights.</p>
         </template>
 
         <div class="p-4">
           <!-- Empty state -->
           <div v-if="!videos || videos.length === 0" class="text-center py-8">
             <p :style="{ color: 'var(--color-site-gold-100)' }">No showreels found.</p>
-            <UButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" class="mt-4" />
+            <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" class="mt-4" />
           </div>
 
           <!-- Vertical feed layout for showreels -->
-          <div v-else class="showreels-feed space-y-6 max-w-3xl mx-auto">
+          <div v-else class="space-y-6 max-w-3xl mx-auto">
             <div 
               v-for="video in videos" 
               :key="video.id" 
-              class="showreel-item rounded-lg overflow-hidden shadow-lg cursor-pointer"
-              @click="handleItemClick(video)"
+              class="bg-site-black border-gold-hover rounded-lg overflow-hidden shadow-lg card-hover-effect"
             >
-              <!-- Video thumbnail with play button -->
-              <template v-if="isVideoItem(video)">
-                <div class="relative aspect-video">
-                  <img 
-                    :src="getVideoThumbnail(video)" 
-                    :alt="video.caption || 'Showreel thumbnail'" 
-                    class="image-responsive"
-                  />
-                  <div class="video-overlay-interactive">
-                    <UIcon name="i-heroicons-play" class="play-icon-medium" />
-                  </div>
-                </div>
-              </template>
-              
-              <!-- Regular image (treated as video item for showreels) -->
-              <template v-else>
-                <div class="relative aspect-video">
-                  <img 
-                    :src="video.thumbnail_url || video.path" 
-                    :alt="video.caption || 'Showreel thumbnail'" 
-                    class="image-responsive image-hover-darken"
-                  />
-                  <div class="video-overlay-static">
-                    <UIcon name="i-heroicons-play" class="play-icon-subtle" />
-                  </div>
-                </div>
-              </template>
+              <BaseMediaItem
+                :item="video"
+                aspect-ratio="video"
+                :show-caption="false"
+                :hover-effect="true"
+                play-button-style="interactive"
+                @click="handleItemClick"
+              />
               
               <div class="p-4">
-                <h3 class="text-lg font-semibold mb-2" :style="{ color: 'var(--color-site-gold-500)' }">
+                <h3 class="text-lg font-semibold mb-2 text-gold-primary">
                   {{ video.title || video.caption || 'Showreel' }}
                 </h3>
-                <p v-if="video.description || video.caption" class="text-sm" :style="{ color: 'var(--color-site-gold-100)' }">
+                <p v-if="video.description || video.caption" class="text-sm text-gold-secondary">
                   {{ video.description || video.caption }}
                 </p>
               </div>
@@ -77,7 +57,7 @@
 
         <template #footer>
           <div class="flex justify-center">
-            <UButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" color="primary" />
+            <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" />
           </div>
         </template>
       </UCard>
@@ -90,7 +70,7 @@
         @close="closeFullscreen"
       />
     </div>
-  </div>
+  </LayoutsPageContainer>
 </template>
 
 <script setup lang="ts">
@@ -153,30 +133,5 @@ useHead({
 </script>
 
 <style scoped>
-.page-container {
-  padding: 2rem;
-}
-
-.showreels-feed {
-  /* Natural page scroll - no height constraints */
-}
-
-.showreel-item {
-  background: var(--color-site-black);
-  border: 1px solid var(--color-site-gold-700);
-  transition: all 0.3s ease;
-}
-
-.showreel-item:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-site-gold-500);
-  box-shadow: 0 8px 25px rgba(196, 147, 38, 0.2);
-}
-
-.showreel-item:hover .relative::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.2);
-}
+/* Custom styles if needed - most styling now handled by Tailwind classes */
 </style> 
