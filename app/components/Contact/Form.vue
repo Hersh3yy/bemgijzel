@@ -4,11 +4,15 @@
     name="contact" 
     method="POST" 
     data-netlify="true"
+    netlify
     @submit="handleSubmit"
     class="p-4 space-y-4"
   >
     <!-- Hidden form-name input for Netlify -->
     <input type="hidden" name="form-name" value="contact" />
+    
+    <!-- Honeypot field for spam protection -->
+    <input type="hidden" name="bot-field" />
     
     <!-- Hidden subject input for custom email subject -->
     <input type="hidden" name="subject" value="New Contact Form Submission from benjamingijzel.nl" />
