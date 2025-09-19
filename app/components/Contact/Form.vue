@@ -1,21 +1,9 @@
 <template>
   <form 
     ref="contactForm"
-    name="contact" 
-    method="POST" 
-    data-netlify="true"
-    netlify
     @submit="handleSubmit"
     class="p-4 space-y-4"
   >
-    <!-- Hidden form-name input for Netlify -->
-    <input type="hidden" name="form-name" value="contact" />
-    
-    <!-- Honeypot field for spam protection -->
-    <input type="hidden" name="bot-field" />
-    
-    <!-- Hidden subject input for custom email subject -->
-    <input type="hidden" name="subject" value="New Contact Form Submission from benjamingijzel.nl" />
 
     <div>
       <label class="block font-semibold mb-2 text-gold-secondary">Your name</label>
@@ -140,19 +128,18 @@ const handleSubmit = async (event: Event) => {
   fieldErrors.value = {}
   
   try {
-    const form = contactForm.value
-    if (!form) throw new Error('Form not found')
-    
-    const formDataToSubmit = new FormData(form)
-    
-    // Submit to Netlify
-    const response = await fetch('/', {
+    // Submit to our API endpoint which will forward to Zapier
+    const response = await $fetch('/api/contact', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(formDataToSubmit as any).toString()
+      body: {
+        name: formData.value.name.trim(),
+        email: formData.value.email.trim(),
+        message: formData.value.message.trim(),
+        subject: 'New Contact Form Submission from benjamingijzel.nl'
+      }
     })
     
-    if (response.ok) {
+    if (response.success) {
       // Reset form
       formData.value = {
         name: '',
@@ -161,14 +148,14 @@ const handleSubmit = async (event: Event) => {
       }
       
       emit('success')
-      logger.info('Contact form submitted successfully via Netlify')
+      logger.info('Contact form submitted successfully via Zapier webhook')
     } else {
       throw new Error('Failed to submit form')
     }
     
   } catch (error: any) {
     logger.error('Error submitting form:', error)
-    emit('error', error.message || 'Failed to send message. Please try again or contact directly.')
+    emit('error', error.data?.message || error.message || 'Failed to send message. Please try again or contact directly.')
   } finally {
     isSending.value = false
   }

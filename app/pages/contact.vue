@@ -38,14 +38,6 @@
       <BaseButton label="Back to Home" to="/" icon="i-heroicons-arrow-uturn-left" variant="primary" />
     </div>
 
-    <!-- Hidden form for Netlify build-time detection -->
-    <form name="contact" netlify netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="contact" />
-      <input type="text" name="name" />
-      <input type="email" name="email" />
-      <textarea name="message"></textarea>
-      <input type="hidden" name="subject" value="New Contact Form Submission from benjamingijzel.nl" />
-    </form>
   </LayoutsPageContainer>
 </template>
 
