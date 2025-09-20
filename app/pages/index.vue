@@ -9,12 +9,12 @@
     <DynamicMosaic v-else-if="mosaicData" :mosaic-data="mosaicData" />
 
     <!-- Fallback static mosaic -->
-    <Mosaic v-else :images="fallbackMosaicImages" />
+    <MosaicGrid v-else :images="fallbackMosaicImages" />
   </div>
 </template>
 
 <script setup lang="ts">
-import type { MosaicImage } from '~/components/Mosaic.vue';
+import type { MosaicImage } from '~/components/Mosaic/Grid.vue';
 import type { MosaicData } from '~/types/api';
 import { useMosaic } from '~/composables/useMosaic';
 import { logger } from '~/utils/logger';

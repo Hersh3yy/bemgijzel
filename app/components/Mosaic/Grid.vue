@@ -1,11 +1,11 @@
 <template>
-  <div class="mosaic-grid">
+  <div class="grid grid-cols-3 gap-4 p-4 min-h-screen items-stretch">
     <!-- First Column (20%) -->
-    <div class="mosaic-column first-column">
+    <div class="flex flex-col gap-4 h-full">
       <div 
         v-for="(image, index) in firstColumnImages" 
         :key="index" 
-        class="mosaic-item"
+        class="relative overflow-hidden rounded-lg cursor-pointer flex-1 min-h-[150px] aspect-[4/3]"
         @click="navigateToPage(image)"
       >
         <img 
@@ -13,7 +13,7 @@
           :alt="image.alt"
           class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <div class="overlay">
+        <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center opacity-0 transition-opacity duration-300 hover:opacity-100 p-4 text-center">
           <h3 class="text-xl font-bold text-white">{{ image.title }}</h3>
           <p class="text-white">{{ image.description }}</p>
         </div>
@@ -21,11 +21,11 @@
     </div>
 
     <!-- Second Column (40%) -->
-    <div class="mosaic-column second-column">
+    <div class="flex flex-col gap-4 h-full">
       <div 
         v-for="(image, index) in secondColumnImages" 
         :key="index" 
-        class="mosaic-item"
+        class="relative overflow-hidden rounded-lg cursor-pointer flex-1 min-h-[150px] aspect-[4/5]"
         @click="navigateToPage(image)"
       >
         <img 
@@ -33,7 +33,7 @@
           :alt="image.alt"
           class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <div class="overlay">
+        <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center opacity-0 transition-opacity duration-300 hover:opacity-100 p-4 text-center">
           <h3 class="text-xl font-bold text-white">{{ image.title }}</h3>
           <p class="text-white">{{ image.description }}</p>
         </div>
@@ -41,11 +41,11 @@
     </div>
 
     <!-- Third Column (40%) -->
-    <div class="mosaic-column third-column">
+    <div class="flex flex-col gap-4 h-full">
       <div 
         v-for="(image, index) in thirdColumnImages" 
         :key="index" 
-        class="mosaic-item"
+        class="relative overflow-hidden rounded-lg cursor-pointer flex-1 min-h-[150px] aspect-square"
         @click="navigateToPage(image)"
       >
         <img 
@@ -53,7 +53,7 @@
           :alt="image.alt"
           class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
-        <div class="overlay">
+        <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center opacity-0 transition-opacity duration-300 hover:opacity-100 p-4 text-center">
           <h3 class="text-xl font-bold text-white">{{ image.title }}</h3>
           <p class="text-white">{{ image.description }}</p>
         </div>
@@ -120,87 +120,29 @@ const navigateToPage = (image: MosaicImage) => {
 </script>
 
 <style scoped>
-.mosaic-grid {
-  display: grid;
-  grid-template-columns: 33% 33% 34%;
-  gap: 1rem;
-  padding: 1rem;
-  min-height: 100vh;
-  align-items: stretch;
-}
-
-.mosaic-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  height: 100%;
-}
-
-.first-column .mosaic-item {
-  /* 4 items in first column - smaller aspect ratio */
-  aspect-ratio: 4/3;
-}
-
-.second-column .mosaic-item {
-  /* 2 items in second column - larger aspect ratio */
-  aspect-ratio: 4/5;
-}
-
-.third-column .mosaic-item {
-  /* 3 items in third column - medium aspect ratio */
-  aspect-ratio: 4/4;
-}
-
-.mosaic-item {
-  position: relative;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  flex: 1;
-  min-height: 150px;
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  padding: 1rem;
-  text-align: center;
-}
-
-.mosaic-item:hover .overlay {
-  opacity: 1;
-}
-
+/* Mobile responsive */
 @media (max-width: 1024px) {
-  .mosaic-grid {
+  .grid {
     grid-template-columns: 1fr;
     min-height: auto;
   }
 
-  .mosaic-column {
+  .flex {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     height: auto;
   }
   
-  .mosaic-item,
-  .first-column .mosaic-item,
-  .second-column .mosaic-item,
-  .third-column .mosaic-item {
+  .aspect-\[4\/3\],
+  .aspect-\[4\/5\],
+  .aspect-square {
     aspect-ratio: 1;
   }
 }
 
 @media (max-width: 480px) {
-  .mosaic-column {
+  .flex {
     grid-template-columns: 1fr !important;
   }
 }
-</style> 
+</style>

@@ -1,6 +1,6 @@
 <template>
   <!-- Video Viewer for videos -->
-  <VideoViewer 
+  <ModalVideo 
     v-if="isVideo"
     :videos="videoItems" 
     :initialVideo="selectedItem"
@@ -8,7 +8,7 @@
   />
   
   <!-- Image Viewer for images -->
-  <ImageViewer 
+  <ModalImage 
     v-else
     :images="imageItems" 
     :initialImage="selectedItem"
@@ -19,8 +19,6 @@
 <script setup lang="ts">
 import type { AlbumImage } from '~/types/api';
 import { useAlbum } from '~/composables/useAlbum';
-import ImageViewer from './ImageViewer.vue';
-import VideoViewer from './VideoViewer.vue';
 
 const props = defineProps<{
   items: AlbumImage[];

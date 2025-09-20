@@ -131,7 +131,3 @@ useHead({
   ]
 });
 </script>
-
-<style scoped>
-/* Custom styles if needed - most styling now handled by Tailwind classes */
-</style> 

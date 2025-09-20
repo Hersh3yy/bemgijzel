@@ -356,8 +356,9 @@ watch(() => route.path, () => {
 
 .navbar-logo {
   max-height: 70px;
-  width: auto;
+  width: 50px;
   height: 50px;
+  object-fit: contain;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 2px 4px rgba(196, 147, 38, 0.1));
   display: block !important;
@@ -376,8 +377,10 @@ watch(() => route.path, () => {
   
   .navbar-logo {
     height: 60px;
+    width: 60px;
     max-height: 60px;
-    min-width: 60px;
+    min-height: 60px;
+    object-fit: contain;
   }
   
   .brand-section {

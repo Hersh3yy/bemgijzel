@@ -25,6 +25,13 @@ export default defineNuxtConfig({
     '@nuxt/icon'
   ],
   css: ['~/assets/css/main.css'],
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/icons/BG_LOGO.png' }
+      ]
+    }
+  },
   ui: {
     theme: {
       colors: ['primary', 'secondary', 'gold'] // Add gold as a custom color
