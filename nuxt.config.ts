@@ -7,9 +7,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     // Private (server-side only)
-    sendGridApiKey: process.env.SENDGRID_API_KEY,
-    sendGridTemplateId: process.env.SENDGRID_TEMPLATE_ID,
-    zapierWebhookUrl: process.env.ZAPIER_WEBHOOK_URL,
+    resendApiKey: process.env.RESEND_API_KEY,
+    resendFromEmail: process.env.RESEND_FROM_EMAIL,
+    resendToEmail: process.env.RESEND_TO_EMAIL,
     
     public: {
       vamsUrl: process.env.VAMS_URL,

@@ -23,6 +23,7 @@
     "nodemailer": "^7.0.6",
     "nuxt": "^3.17.5",
     "postmark": "^4.0.5",
+    "resend": "^6.1.0",
     "typescript": "^5.9.2",
     "vue": "^3.5.21",
     "vue-router": "^4.5.1"
